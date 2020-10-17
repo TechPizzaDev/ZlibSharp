@@ -1,0 +1,6 @@
+[submodule "Sichem"]
+	path = Sichem
+	url = https://github.com/TechnologicalPizza/Sichem
+[submodule "zlib"]
+	path = zlib
+	url = https://github.com/madler/zlib
