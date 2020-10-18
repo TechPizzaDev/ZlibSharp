@@ -6,115 +6,178 @@ using static CRuntime;
 
 namespace ZlibSharp
 {
-	unsafe class ZUtil
-	{
-		public static sbyte*[] z_errmsg = { "need dictionary", "stream end", "", "file error", "stream error", "data error", "insufficient memory", "buffer error", "incompatible version", "" };
-		[StructLayout(LayoutKind.Sequential)]
-		public class z_stream_s
-	{
-		public byte* next_in;
-		public uint avail_in;
-		public int total_in;
-		public byte* next_out;
-		public uint avail_out;
-		public int total_out;
-		public string msg;
-		public internal_state state;
-		public zalloc_delegate zalloc;
-		public zfree_delegate zfree;
-		public void * opaque;
-		public int data_type;
-		public int adler;
-		public int reserved;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gz_header_s
-	{
-		public int text;
-		public int time;
-		public int xflags;
-		public int os;
-		public byte* extra;
-		public uint extra_len;
-		public uint extra_max;
-		public byte* name;
-		public uint name_max;
-		public byte* comment;
-		public uint comm_max;
-		public int hcrc;
-		public int done;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gzFile_s
-	{
-		public uint have;
-		public byte* next;
-		public long pos;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gz_state
-	{
-		public gzFile_s x;
-		public int mode;
-		public int fd;
-		public sbyte* path;
-		public uint size;
-		public uint want;
-		public byte* _in_;
-		public byte* _out_;
-		public int direct;
-		public int how;
-		public long start;
-		public int eof;
-		public int past;
-		public int level;
-		public int strategy;
-		public long skip;
-		public int seek;
-		public int err;
-		public string msg;
-		public z_stream_s strm;
-		}
-		public static sbyte* zlibVersion()
-		{
-			return "1.2.11";
-		}
+    public unsafe class ZUtil
+    {
+        public static string[] z_errmsg = {
+            "need dictionary", "stream end", "", "file error", "stream error", "data error", "insufficient memory", "buffer error", "incompatible version", "" 
+        };
 
-		public static int zlibCompileFlags()
-		{
-			int flags = 0;
-			flags = (int)(0);
-			switch ((int)(sizeof(uint))){
-case 2:break;case 4:flags += (int)(1);break;case 8:flags += (int)(2);break;default: flags += (int)(3);}
+        [StructLayout(LayoutKind.Sequential)]
+        public class z_stream_s
+        {
+            public Memory<byte> next_in;
+            public int next_in_off;
+            public int avail_in;
+            public int total_in;
+            public Memory<byte> next_out;
+            public int avail_out;
+            public int total_out;
+            public string? msg;
+            public internal_state state;
+            public zalloc_delegate zalloc;
+            public zfree_delegate zfree;
+            public int data_type;
+            public int checksum;
+            public int reserved;
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct static_tree_desc_s
+        {
+            public ct_data_s[]? static_tree;
+            public int[] extra_bits;
+            public int extra_base;
+            public int elems;
+            public int max_length;
 
-			switch ((int)(sizeof(int))){
-case 2:break;case 4:flags += (int)(1 << 2);break;case 8:flags += (int)(2 << 2);break;default: flags += (int)(3 << 2);}
+            public static_tree_desc_s(ct_data_s[]? static_tree, int[] extra_bits, int extra_base, int elems, int max_length)
+            {
+                this.static_tree = static_tree;
+                this.extra_bits = extra_bits ?? throw new ArgumentNullException(nameof(extra_bits));
+                this.extra_base = extra_base;
+                this.elems = elems;
+                this.max_length = max_length;
+            }
+        }
 
-			switch ((int)(sizeof(void *))){
-case 2:break;case 4:flags += (int)(1 << 4);break;case 8:flags += (int)(2 << 4);break;default: flags += (int)(3 << 4);}
+        [StructLayout(LayoutKind.Sequential)]
+        public struct tree_desc_s
+        {
+            public ct_data_s[] dyn_tree;
+            public int max_code;
+            public static_tree_desc_s stat_desc;
+        }
 
-			switch ((int)(sizeof(z_off_t))){
-case 2:break;case 4:flags += (int)(1 << 6);break;case 8:flags += (int)(2 << 6);break;default: flags += (int)(3 << 6);}
+        [StructLayout(LayoutKind.Sequential)]
+        public class gz_header_s
+        {
+            public int text;
+            public int time;
+            public int xflags;
+            public int os;
+            public byte[] extra;
+            public int extra_len;
+            public uint extra_max;
+            public byte* name;
+            public uint name_max;
+            public byte* comment;
+            public uint comm_max;
+            public int hcrc;
+            public int done;
+        }
 
-			return (int)(flags);
-		}
+        [StructLayout(LayoutKind.Sequential)]
+        public class internal_state
+        {
+            public z_stream_s strm;
+            public int status;
+            public byte[] pending_buf;
+            public int pending_buf_size => pending_buf.Length;
+            public Memory<byte> pending_out;
+            public int pending;
+            public int wrap;
+            public gz_header_s gzhead;
+            public int gzindex;
+            public byte method;
+            public int last_flush;
+            public int w_size;
+            public int w_bits;
+            public int w_mask;
+            public byte[] window;
+            public int window_size;
+            public ushort[] prev;
+            public ushort[] head;
+            public uint ins_h;
+            public int hash_size;
+            public int hash_bits;
+            public uint hash_mask;
+            public int hash_shift;
+            public int block_start;
+            public int match_length;
+            public uint prev_match;
+            public int match_available;
+            public int strstart;
+            public int match_start;
+            public int lookahead;
+            public int prev_length;
+            public uint max_chain_length;
+            public uint max_lazy_match;
+            public int level;
+            public int strategy;
+            public uint good_match;
+            public int nice_match;
+            public ct_data_s[] dyn_ltree = new ct_data_s[(2 * (256 + 1 + 29) + 1)];
+            public ct_data_s[] dyn_dtree = new ct_data_s[2 * 30 + 1];
+            public ct_data_s[] bl_tree = new ct_data_s[2 * 19 + 1];
+            public tree_desc_s l_desc;
+            public tree_desc_s d_desc;
+            public tree_desc_s bl_desc;
+            public ushort[] bl_count = new ushort[15 + 1];
+            public int[] heap = new int[2 * (256 + 1 + 29) + 1];
+            public int heap_len;
+            public int heap_max;
+            public byte[] depth = new byte[2 * (256 + 1 + 29) + 1];
+            public Memory<byte> l_buf;
+            public int lit_bufsize;
+            public int last_lit;
+            public Memory<byte> d_buf;
+            public int opt_len;
+            public int static_len;
+            public int matches;
+            public int insert;
+            public ushort bi_buf;
+            public int bi_valid;
+            public int high_water;
+        }
 
-		public static sbyte* zError(int err)
-		{
-			return z_errmsg[2 - (err)];
-		}
+        [StructLayout(LayoutKind.Sequential)]
+        public struct fc
+        {
+            public ushort freq;
+            public ushort code;
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct dl
+        {
+            public ushort dad;
+            public ushort len;
+        }
 
-		public static void * zcalloc(void * opaque, uint items, uint size)
-		{
-			(void)(opaque);
-			return (sizeof(uint)) > (2)?malloc((ulong)(items * size)):calloc((ulong)(items), (ulong)(size));
-		}
+        [StructLayout(LayoutKind.Explicit)]
+        public struct ct_data_s
+        {
+            [FieldOffset(0)]
+            public fc fc;
 
-		public static void zcfree(void * opaque, void * ptr)
-		{
-			(void)(opaque);
-			free(ptr);
-		}
+            [FieldOffset(0)]
+            public dl dl;
 
-}
+            public ct_data_s(ushort x, ushort y)
+            {
+                dl = default;
+                fc.freq = x;
+                fc.code = y;
+                // TODO: Unsafe.SkipInit 
+            }
+        }
+
+        public static string zlibVersion()
+        {
+            return "1.2.11";
+        }
+
+        public static string zError(int err)
+        {
+            return z_errmsg[2 - err];
+        }
+    }
 }

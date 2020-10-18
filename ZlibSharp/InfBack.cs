@@ -135,23 +135,23 @@ namespace ZlibSharp
 		public static int inflateBackInit_(z_stream_s strm, int windowBits, byte* window, sbyte* version, int stream_size)
 		{
 			inflate_state state;
-			if ((((version) == (null)) || (version[0] != "1.2.11"[0])) || (stream_size != (int)(sizeof(z_stream_s)))) return (int)(-6);
-			if (((((strm) == (null)) || ((window) == (null))) || ((windowBits) < (8))) || ((windowBits) > (15))) return (int)(-2);
+			if ((version == null) || (version[0] != "1.2.11"[0]) || (stream_size != sizeof(z_stream_s))) return -6;
+			if ((strm == null) || (window == null) || (windowBits < 8) || (windowBits > 15)) return -2;
 			strm.msg = null;
-			if (strm.zalloc == ((zalloc_delegate)(0))) {
-strm.zalloc = zcalloc;strm.opaque = (void *)(0);}
+			if (strm.zalloc == ((zalloc_delegate)0)) {
+strm.zalloc = zcalloc;strm.opaque = (void *)0;}
 
-			if (strm.zfree == ((zfree_delegate)(0))) strm.zfree = zcfree;
-			state = (inflate_state)(strm.zalloc(strm.opaque, (uint)(1), (uint)(sizeof(inflate_state))));
-			if ((state) == (null)) return (int)(-4);
-			strm.state = (internal_state)(state);
-			state->dmax = (uint)(32768U);
-			state->wbits = ((uint)(windowBits));
-			state->wsize = (uint)(1U << windowBits);
+			if (strm.zfree == ((zfree_delegate)0)) strm.zfree = zcfree;
+			state = (inflate_state)strm.zalloc(strm.opaque, 1, (uint)sizeof(inflate_state));
+			if (state == null) return -4;
+			strm.state = (internal_state)state;
+			state->dmax = 32768U;
+			state->wbits = (uint)windowBits;
+			state->wsize = 1U << windowBits;
 			state->window = window;
-			state->wnext = (uint)(0);
-			state->whave = (uint)(0);
-			return (int)(0);
+			state->wnext = 0;
+			state->whave = 0;
+			return 0;
 		}
 
 		public static void fixedtables(inflate_state state)
@@ -705,9 +705,9 @@ distfix[30] = (code)({ 22, 5, 193 });
 distfix[31] = (code)({ 64, 5, 0 });
 
 			state->lencode = lenfix;
-			state->lenbits = (uint)(9);
+			state->lenbits = 9;
 			state->distcode = distfix;
-			state->distbits = (uint)(5);
+			state->distbits = 5;
 		}
 
 		public static int inflateBack(z_stream_s strm, unsigned int (void *, unsigned char **)* _in_, void * in_desc, int (void *, unsigned char *, unsigned int)* _out_, void * out_desc)
@@ -763,284 +763,338 @@ do {
 hold >>= bits & 7;bits -= (uint)(bits & 7);}
  while ((0) != 0);state->mode = (inflate_mode)(DONE);break;}
 do {
-while ((bits) < ((uint)(3))) {do {
+while (bits < 3) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                        goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->last = (int)((uint)(hold) & ((1U << (1)) - 1));do {
-hold >>= (1);bits -= ((uint)(1));}
- while ((0) != 0);switch (((uint)(hold) & ((1U << (2)) - 1))){
-case 0:;state->mode = (inflate_mode)(STORED);break;case 1:fixedtables(state);state->mode = (inflate_mode)(LEN);break;case 2:;state->mode = (inflate_mode)(TABLE);break;case 3:strm.msg = "invalid block type";state->mode = (inflate_mode)(BAD);}
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+        }
+ while (0 != 0);}}
+ while (0 != 0);state->last = (int)((uint)hold & ((1U << (1)) - 1));do {
+hold >>= 1;bits -= 1;
+}
+ while (0 != 0);switch ((uint)hold & ((1U << (2)) - 1)){
+case 0:;state->mode = (inflate_mode)STORED;break;case 1:fixedtables(state);state->mode = (inflate_mode)LEN;break;case 2:;state->mode = (inflate_mode)TABLE;break;case 3:strm.msg = "invalid block type";state->mode = (inflate_mode)BAD;}
 do {
-hold >>= (2);bits -= ((uint)(2));}
- while ((0) != 0);break;case STORED:do {
+hold >>= 2;bits -= 2;
+}
+ while (0 != 0);break;case STORED:do {
 hold >>= bits & 7;bits -= (uint)(bits & 7);}
- while ((0) != 0);do {
-while ((bits) < ((uint)(32))) {do {
+ while (0 != 0);do {
+while (bits < 32) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                        goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);if ((hold & 0xffff) != ((hold >> 16) ^ 0xffff)) {
-strm.msg = "invalid stored block lengths";state->mode = (inflate_mode)(BAD);break;}
-state->length = (uint)((uint)(hold) & 0xffff);do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);while (state->length != 0) {
-copy = (uint)(state->length);do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+        }
+ while (0 != 0);}}
+ while (0 != 0);if ((hold & 0xffff) != ((hold >> 16) ^ 0xffff)) {
+strm.msg = "invalid stored block lengths";state->mode = (inflate_mode)BAD;break;}
+state->length = (uint)((uint)hold & 0xffff);do {
+hold = 0;
+    bits = 0;
+}
+ while (0 != 0);while (state->length != 0) {
+copy = (uint)state->length;do {
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                goto inf_leave;}
 }
 }
- while ((0) != 0);do {
-if ((left) == (0)) {
-put = state->window;left = (uint)(state->wsize);state->whave = (uint)(left);if ((_out_(out_desc, put, (uint)(left))) != 0) {
-ret = (int)(-5);goto inf_leave;}
+ while (0 != 0);do {
+if (left == 0) {
+put = state->window;left = (uint)state->wsize;state->whave = (uint)left;if (_out_(out_desc, put, (uint)left) != 0) {
+ret = -5;
+                goto inf_leave;}
 }
 }
- while ((0) != 0);if ((copy) > (have)) copy = (uint)(have);if ((copy) > (left)) copy = (uint)(left);memcpy(put, next, (ulong)(copy));have -= (uint)(copy);next += copy;left -= (uint)(copy);put += copy;state->length -= (uint)(copy);}state->mode = (inflate_mode)(TYPE);break;case TABLE:do {
-while ((bits) < ((uint)(14))) {do {
+ while (0 != 0);if (copy > have) copy = (uint)have;if (copy > left) copy = (uint)left;memcpy(put, next, (ulong)copy);have -= (uint)copy;next += copy;left -= (uint)copy;put += copy;state->length -= (uint)copy;}state->mode = (inflate_mode)TYPE;break;case TABLE:do {
+while (bits < 14) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                        goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->nlen = (uint)(((uint)(hold) & ((1U << (5)) - 1)) + 257);do {
-hold >>= (5);bits -= ((uint)(5));}
- while ((0) != 0);state->ndist = (uint)(((uint)(hold) & ((1U << (5)) - 1)) + 1);do {
-hold >>= (5);bits -= ((uint)(5));}
- while ((0) != 0);state->ncode = (uint)(((uint)(hold) & ((1U << (4)) - 1)) + 4);do {
-hold >>= (4);bits -= ((uint)(4));}
- while ((0) != 0);if (((state->nlen) > (286)) || ((state->ndist) > (30))) {
-strm.msg = "too many length or distance symbols";state->mode = (inflate_mode)(BAD);break;}
-state->have = (uint)(0);while ((state->have) < (state->ncode)) {
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+        }
+ while (0 != 0);}}
+ while (0 != 0);state->nlen = (uint)(((uint)hold & ((1U << (5)) - 1)) + 257);do {
+hold >>= 5;bits -= 5;
+}
+ while (0 != 0);state->ndist = (uint)(((uint)hold & ((1U << (5)) - 1)) + 1);do {
+hold >>= 5;bits -= 5;
+}
+ while (0 != 0);state->ncode = (uint)(((uint)hold & ((1U << (4)) - 1)) + 4);do {
+hold >>= 4;bits -= 4;
+}
+ while (0 != 0);if ((state->nlen > 286) || (state->ndist > 30)) {
+strm.msg = "too many length or distance symbols";state->mode = (inflate_mode)BAD;break;}
+state->have = 0;
+while (state->have < state->ncode) {
 do {
-while ((bits) < ((uint)(3))) {do {
+while (bits < 3) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                            goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->lens[order[state->have++]] = ((ushort)((uint)(hold) & ((1U << (3)) - 1)));do {
-hold >>= (3);bits -= ((uint)(3));}
- while ((0) != 0);}while ((state->have) < (19)) {state->lens[order[state->have++]] = (ushort)(0);}state->next = state->codes;state->lencode = (state->next);state->lenbits = (uint)(7);ret = (int)(inflate_table((codetype)(CODES), state->lens, (uint)(19), &(state->next), &(state->lenbits), state->work));if ((ret) != 0) {
-strm.msg = "invalid code lengths set";state->mode = (inflate_mode)(BAD);break;}
-state->have = (uint)(0);while ((state->have) < (state->nlen + state->ndist)) {
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+            }
+ while (0 != 0);}}
+ while (0 != 0);state->lens[order[state->have++]] = (ushort)((uint)hold & ((1U << (3)) - 1));do {
+hold >>= 3;bits -= 3;
+    }
+ while (0 != 0);}while (state->have < 19) {state->lens[order[state->have++]] = 0; }state->next = state->codes;state->lencode = state->next;state->lenbits = 7;
+ret = (int)inflate_table((codetype)CODES, state->lens, 19, &state->next, &state->lenbits, state->work);if (ret != 0) {
+strm.msg = "invalid code lengths set";state->mode = (inflate_mode)BAD;break;}
+state->have = 0;
+while (state->have < (state->nlen + state->ndist)) {
 for (; ; ) {
-here = (code)(state->lencode[((uint)(hold) & ((1U << (state->lenbits)) - 1))]);if ((uint)(here.bits) <= bits) break;do {
+here = (code)state->lencode[(uint)hold & ((1U << (state->lenbits)) - 1)];if ((uint)here.bits <= bits) break;do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                        goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}if ((here.val) < (16)) {
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+        }
+ while (0 != 0);}if (here.val < 16) {
 do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);state->lens[state->have++] = (ushort)(here.val);}
+hold >>= here.bits;bits -= (uint)here.bits;}
+ while (0 != 0);state->lens[state->have++] = (ushort)here.val;}
  else {
-if ((here.val) == (16)) {
+if (here.val == 16) {
 do {
-while ((bits) < ((uint)(here.bits + 2))) {do {
+while (bits < ((uint)(here.bits + 2))) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                                    goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);if ((state->have) == (0)) {
-strm.msg = "invalid bit length repeat";state->mode = (inflate_mode)(BAD);break;}
-len = ((uint)(state->lens[state->have - 1]));copy = (uint)(3 + ((uint)(hold) & ((1U << (2)) - 1)));do {
-hold >>= (2);bits -= ((uint)(2));}
- while ((0) != 0);}
- else if ((here.val) == (17)) {
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+                    }
+ while (0 != 0);}}
+ while (0 != 0);do {
+hold >>= here.bits;bits -= (uint)here.bits;}
+ while (0 != 0);if (state->have == 0) {
+strm.msg = "invalid bit length repeat";state->mode = (inflate_mode)BAD;break;}
+len = (uint)state->lens[state->have - 1];copy = (uint)(3 + ((uint)hold & ((1U << (2)) - 1)));do {
+hold >>= 2;bits -= 2;
+            }
+ while (0 != 0);}
+ else if (here.val == 17) {
 do {
-while ((bits) < ((uint)(here.bits + 3))) {do {
+while (bits < ((uint)(here.bits + 3))) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                                    goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);len = (uint)(0);copy = (uint)(3 + ((uint)(hold) & ((1U << (3)) - 1)));do {
-hold >>= (3);bits -= ((uint)(3));}
- while ((0) != 0);}
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+                    }
+ while (0 != 0);}}
+ while (0 != 0);do {
+hold >>= here.bits;bits -= (uint)here.bits;}
+ while (0 != 0);len = 0;
+            copy = (uint)(3 + ((uint)hold & ((1U << (3)) - 1)));do {
+hold >>= 3;bits -= 3;
+            }
+ while (0 != 0);}
  else {
 do {
-while ((bits) < ((uint)(here.bits + 7))) {do {
+while (bits < ((uint)(here.bits + 7))) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                                    goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);len = (uint)(0);copy = (uint)(11 + ((uint)(hold) & ((1U << (7)) - 1)));do {
-hold >>= (7);bits -= ((uint)(7));}
- while ((0) != 0);}
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+                    }
+ while (0 != 0);}}
+ while (0 != 0);do {
+hold >>= here.bits;bits -= (uint)here.bits;}
+ while (0 != 0);len = 0;
+            copy = (uint)(11 + ((uint)hold & ((1U << (7)) - 1)));do {
+hold >>= 7;bits -= 7;
+            }
+ while (0 != 0);}
 if ((state->have + copy) > (state->nlen + state->ndist)) {
-strm.msg = "invalid bit length repeat";state->mode = (inflate_mode)(BAD);break;}
-while ((copy--) != 0) {state->lens[state->have++] = ((ushort)(len));}}
-}if ((state->mode) == (BAD)) break;if ((state->lens[256]) == (0)) {
-strm.msg = "invalid code -- missing end-of-block";state->mode = (inflate_mode)(BAD);break;}
-state->next = state->codes;state->lencode = (state->next);state->lenbits = (uint)(9);ret = (int)(inflate_table((codetype)(LENS), state->lens, (uint)(state->nlen), &(state->next), &(state->lenbits), state->work));if ((ret) != 0) {
-strm.msg = "invalid literal/lengths set";state->mode = (inflate_mode)(BAD);break;}
-state->distcode = (state->next);state->distbits = (uint)(6);ret = (int)(inflate_table((codetype)(DISTS), state->lens + state->nlen, (uint)(state->ndist), &(state->next), &(state->distbits), state->work));if ((ret) != 0) {
-strm.msg = "invalid distances set";state->mode = (inflate_mode)(BAD);break;}
-state->mode = (inflate_mode)(LEN);case LEN:if (((have) >= (6)) && ((left) >= (258))) {
+strm.msg = "invalid bit length repeat";state->mode = (inflate_mode)BAD;break;}
+while (copy-- != 0) {state->lens[state->have++] = (ushort)len;}}
+}if (state->mode == BAD) break;if (state->lens[256] == 0) {
+strm.msg = "invalid code -- missing end-of-block";state->mode = (inflate_mode)BAD;break;}
+state->next = state->codes;state->lencode = state->next;state->lenbits = 9;
+ret = (int)inflate_table((codetype)LENS, state->lens, (uint)state->nlen, &state->next, &state->lenbits, state->work);if (ret != 0) {
+strm.msg = "invalid literal/lengths set";state->mode = (inflate_mode)BAD;break;}
+state->distcode = state->next;state->distbits = 6;
+ret = (int)inflate_table((codetype)DISTS, state->lens + state->nlen, (uint)state->ndist, &state->next, &state->distbits, state->work);if (ret != 0) {
+strm.msg = "invalid distances set";state->mode = (inflate_mode)BAD;break;}
+state->mode = (inflate_mode)LEN;case LEN:if ((have >= 6) && (left >= 258)) {
 do {
-strm.next_out = put;strm.avail_out = (uint)(left);strm.next_in = next;strm.avail_in = (uint)(have);state->hold = (int)(hold);state->bits = (uint)(bits);}
- while ((0) != 0);if ((state->whave) < (state->wsize)) state->whave = (uint)(state->wsize - left);inflate_fast(strm, (uint)(state->wsize));do {
-put = strm.next_out;left = (uint)(strm.avail_out);next = strm.next_in;have = (uint)(strm.avail_in);hold = (int)(state->hold);bits = (uint)(state->bits);}
- while ((0) != 0);break;}
+strm.next_out = put;strm.avail_out = (uint)left;strm.next_in = next;strm.avail_in = (uint)have;state->hold = (int)hold;state->bits = (uint)bits;}
+ while (0 != 0);if (state->whave < state->wsize) state->whave = (uint)(state->wsize - left);inflate_fast(strm, (uint)state->wsize);do {
+put = strm.next_out;left = (uint)strm.avail_out;next = strm.next_in;have = (uint)strm.avail_in;hold = (int)state->hold;bits = (uint)state->bits;}
+ while (0 != 0);break;}
 for (; ; ) {
-here = (code)(state->lencode[((uint)(hold) & ((1U << (state->lenbits)) - 1))]);if ((uint)(here.bits) <= bits) break;do {
+here = (code)state->lencode[(uint)hold & ((1U << (state->lenbits)) - 1)];if ((uint)here.bits <= bits) break;do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                    goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}if (((here.op) != 0) && ((here.op & 0xf0) == (0))) {
-last = (code)(here);for (; ; ) {
-here = (code)(state->lencode[last.val + (((uint)(hold) & ((1U << (last.bits + last.op)) - 1)) >> last.bits)]);if ((uint)(last.bits + here.bits) <= bits) break;do {
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+    }
+ while (0 != 0);}if ((here.op != 0) && ((here.op & 0xf0) == 0)) {
+last = (code)here;for (; ; ) {
+here = (code)state->lencode[last.val + (((uint)hold & ((1U << (last.bits + last.op)) - 1)) >> last.bits)];if ((uint)(last.bits + here.bits) <= bits) break;do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                        goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}do {
-hold >>= (last.bits);bits -= ((uint)(last.bits));}
- while ((0) != 0);}
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+        }
+ while (0 != 0);}do {
+hold >>= last.bits;bits -= (uint)last.bits;}
+ while (0 != 0);}
 do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);state->length = ((uint)(here.val));if ((here.op) == (0)) {
+hold >>= here.bits;bits -= (uint)here.bits;}
+ while (0 != 0);state->length = (uint)here.val;if (here.op == 0) {
 do {
-if ((left) == (0)) {
-put = state->window;left = (uint)(state->wsize);state->whave = (uint)(left);if ((_out_(out_desc, put, (uint)(left))) != 0) {
-ret = (int)(-5);goto inf_leave;}
+if (left == 0) {
+put = state->window;left = (uint)state->wsize;state->whave = (uint)left;if (_out_(out_desc, put, (uint)left) != 0) {
+ret = -5;
+                goto inf_leave;}
 }
 }
- while ((0) != 0);*put++ = ((byte)(state->length));left--;state->mode = (inflate_mode)(LEN);break;}
+ while (0 != 0);*put++ = (byte)state->length;left--;state->mode = (inflate_mode)LEN;break;}
 if ((here.op & 32) != 0) {
-state->mode = (inflate_mode)(TYPE);break;}
+state->mode = (inflate_mode)TYPE;break;}
 if ((here.op & 64) != 0) {
-strm.msg = "invalid literal/length code";state->mode = (inflate_mode)(BAD);break;}
-state->extra = (uint)((uint)(here.op) & 15);if (state->extra != 0) {
+strm.msg = "invalid literal/length code";state->mode = (inflate_mode)BAD;break;}
+state->extra = (uint)((uint)here.op & 15);if (state->extra != 0) {
 do {
-while ((bits) < (state->extra)) {do {
+while (bits < state->extra) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                            goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->length += (uint)((uint)(hold) & ((1U << (state->extra)) - 1));do {
-hold >>= (state->extra);bits -= (uint)(state->extra);}
- while ((0) != 0);}
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+            }
+ while (0 != 0);}}
+ while (0 != 0);state->length += (uint)((uint)hold & ((1U << (state->extra)) - 1));do {
+hold >>= state->extra;bits -= (uint)state->extra;}
+ while (0 != 0);}
 for (; ; ) {
-here = (code)(state->distcode[((uint)(hold) & ((1U << (state->distbits)) - 1))]);if ((uint)(here.bits) <= bits) break;do {
+here = (code)state->distcode[(uint)hold & ((1U << (state->distbits)) - 1)];if ((uint)here.bits <= bits) break;do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                    goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}if ((here.op & 0xf0) == (0)) {
-last = (code)(here);for (; ; ) {
-here = (code)(state->distcode[last.val + (((uint)(hold) & ((1U << (last.bits + last.op)) - 1)) >> last.bits)]);if ((uint)(last.bits + here.bits) <= bits) break;do {
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+    }
+ while (0 != 0);}if ((here.op & 0xf0) == 0) {
+last = (code)here;for (; ; ) {
+here = (code)state->distcode[last.val + (((uint)hold & ((1U << (last.bits + last.op)) - 1)) >> last.bits)];if ((uint)(last.bits + here.bits) <= bits) break;do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                        goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}do {
-hold >>= (last.bits);bits -= ((uint)(last.bits));}
- while ((0) != 0);}
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+        }
+ while (0 != 0);}do {
+hold >>= last.bits;bits -= (uint)last.bits;}
+ while (0 != 0);}
 do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);if ((here.op & 64) != 0) {
-strm.msg = "invalid distance code";state->mode = (inflate_mode)(BAD);break;}
-state->offset = ((uint)(here.val));state->extra = (uint)((uint)(here.op) & 15);if (state->extra != 0) {
+hold >>= here.bits;bits -= (uint)here.bits;}
+ while (0 != 0);if ((here.op & 64) != 0) {
+strm.msg = "invalid distance code";state->mode = (inflate_mode)BAD;break;}
+state->offset = (uint)here.val;state->extra = (uint)((uint)here.op & 15);if (state->extra != 0) {
 do {
-while ((bits) < (state->extra)) {do {
+while (bits < state->extra) {do {
 do {
-if ((have) == (0)) {
-have = (uint)(_in_(in_desc, &next));if ((have) == (0)) {
-next = null;ret = (int)(-5);goto inf_leave;}
+if (have == 0) {
+have = (uint)_in_(in_desc, &next);if (have == 0) {
+next = null;ret = -5;
+                            goto inf_leave;}
 }
 }
- while ((0) != 0);have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->offset += (uint)((uint)(hold) & ((1U << (state->extra)) - 1));do {
-hold >>= (state->extra);bits -= (uint)(state->extra);}
- while ((0) != 0);}
-if ((state->offset) > (state->wsize - ((state->whave) < (state->wsize)?left:0))) {
-strm.msg = "invalid distance too far back";state->mode = (inflate_mode)(BAD);break;}
+ while (0 != 0);have--;hold += (int)((int)*next++ << bits);bits += 8;
+            }
+ while (0 != 0);}}
+ while (0 != 0);state->offset += (uint)((uint)hold & ((1U << (state->extra)) - 1));do {
+hold >>= state->extra;bits -= (uint)state->extra;}
+ while (0 != 0);}
+if (state->offset > (state->wsize - (state->whave < state->wsize?left:0))) {
+strm.msg = "invalid distance too far back";state->mode = (inflate_mode)BAD;break;}
 do {
 do {
-if ((left) == (0)) {
-put = state->window;left = (uint)(state->wsize);state->whave = (uint)(left);if ((_out_(out_desc, put, (uint)(left))) != 0) {
-ret = (int)(-5);goto inf_leave;}
+if (left == 0) {
+put = state->window;left = (uint)state->wsize;state->whave = (uint)left;if (_out_(out_desc, put, (uint)left) != 0) {
+ret = -5;
+                goto inf_leave;}
 }
 }
- while ((0) != 0);copy = (uint)(state->wsize - state->offset);if ((copy) < (left)) {
+ while (0 != 0);copy = (uint)(state->wsize - state->offset);if (copy < left) {
 from = put + copy;copy = (uint)(left - copy);}
  else {
-from = put - state->offset;copy = (uint)(left);}
-if ((copy) > (state->length)) copy = (uint)(state->length);state->length -= (uint)(copy);left -= (uint)(copy);do {
-*put++ = (byte)(*from++);}
+from = put - state->offset;copy = (uint)left;}
+if (copy > state->length) copy = (uint)state->length;state->length -= (uint)copy;left -= (uint)copy;do {
+*put++ = (byte)*from++;}
  while ((--copy) != 0);}
- while (state->length != 0);break;case DONE:ret = (int)(1);if ((left) < (state->wsize)) {
-if ((_out_(out_desc, state->window, (uint)(state->wsize - left))) != 0) ret = (int)(-5);}
-goto inf_leave;case BAD:ret = (int)(-3);goto inf_leave;default: ret = (int)(-2);goto inf_leave;}}
+ while (state->length != 0);break;case DONE:ret = 1;
+if (left < state->wsize) {
+if (_out_(out_desc, state->window, (uint)(state->wsize - left)) != 0) ret = -5;
+}
+goto inf_leave;case BAD:ret = -3;
+goto inf_leave;default: ret = -2;
+goto inf_leave;}}
 			inf_leave:;
 strm.next_in = next;
-			strm.avail_in = (uint)(have);
-			return (int)(ret);
+			strm.avail_in = (uint)have;
+			return (int)ret;
 		}
 
 		public static int inflateBackEnd(z_stream_s strm)
 		{
-			if ((((strm) == (null)) || ((strm.state) == (null))) || (strm.zfree == ((zfree_delegate)(0)))) return (int)(-2);
-			strm.zfree(strm.opaque, (void *)(strm.state));
+			if ((strm == null) || (strm.state == null) || (strm.zfree == ((zfree_delegate)0))) return (int)-2;
+			strm.zfree(strm.opaque, (void *)strm.state);
 			strm.state = null;
-			return (int)(0);
+			return (int)0;
 		}
 
 }

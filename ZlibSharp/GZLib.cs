@@ -6,302 +6,301 @@ using static CRuntime;
 
 namespace ZlibSharp
 {
-	unsafe class GZLib
-	{
-		[StructLayout(LayoutKind.Sequential)]
-		public class z_stream_s
-	{
-		public byte* next_in;
-		public uint avail_in;
-		public int total_in;
-		public byte* next_out;
-		public uint avail_out;
-		public int total_out;
-		public string msg;
-		public internal_state state;
-		public zalloc_delegate zalloc;
-		public zfree_delegate zfree;
-		public void * opaque;
-		public int data_type;
-		public int adler;
-		public int reserved;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gz_header_s
-	{
-		public int text;
-		public int time;
-		public int xflags;
-		public int os;
-		public byte* extra;
-		public uint extra_len;
-		public uint extra_max;
-		public byte* name;
-		public uint name_max;
-		public byte* comment;
-		public uint comm_max;
-		public int hcrc;
-		public int done;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gzFile_s
-	{
-		public uint have;
-		public byte* next;
-		public long pos;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gz_state
-	{
-		public gzFile_s x;
-		public int mode;
-		public int fd;
-		public sbyte* path;
-		public uint size;
-		public uint want;
-		public byte* _in_;
-		public byte* _out_;
-		public int direct;
-		public int how;
-		public long start;
-		public int eof;
-		public int past;
-		public int level;
-		public int strategy;
-		public long skip;
-		public int seek;
-		public int err;
-		public string msg;
-		public z_stream_s strm;
-		}
-		public static void gz_reset(gz_state* state)
-		{
-			state->x.have = (uint)(0);
-			if ((state->mode) == (7247)) {
-state->eof = (int)(0);state->past = (int)(0);state->how = (int)(0);}
+    public unsafe class GZLib
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        public struct gzFile_s
+        {
+            public uint have;
+            public byte* next;
+            public long pos;
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct gz_state
+        {
+            public gzFile_s x;
+            public int mode;
+            public int fd;
+            public sbyte* path;
+            public uint size;
+            public uint want;
+            public byte* _in_;
+            public byte* _out_;
+            public int direct;
+            public int how;
+            public long start;
+            public int eof;
+            public int past;
+            public int level;
+            public int strategy;
+            public long skip;
+            public int seek;
+            public int err;
+            public string msg;
+            public z_stream_s strm;
+        }
 
-			state->seek = (int)(0);
-			gz_error(state, (int)(0), ((void *)(0)));
-			state->x.pos = (long)(0);
-			state->strm.avail_in = (uint)(0);
-		}
+        public static void gz_reset(gz_state* state)
+        {
+            state->x.have = 0;
+            if (state->mode == 7247) {
+state->eof = 0;
+                state->past = 0;
+                state->how = 0;
+            }
 
-		public static gzFile_s* gz_open(void * path, int fd, sbyte* mode)
-		{
-			gz_state* state;
-			ulong len = 0;
-			int oflag = 0;
-			int exclusive = (int)(0);
-			if ((path) == ((void *)(0))) return ((void *)(0));
-			state = (gz_state*)(malloc((ulong)(sizeof(gz_state))));
-			if ((state) == ((void *)(0))) return ((void *)(0));
-			state->size = (uint)(0);
-			state->want = (uint)(8192);
-			state->msg = ((void *)(0));
-			state->mode = (int)(0);
-			state->level = (int)(-1);
-			state->strategy = (int)(0);
-			state->direct = (int)(0);
-			while ((*mode) != 0) {
-if (((*mode) >= ('0')) && (*mode <= '9')) state->level = (int)(*mode - '0'); else switch (*mode){
-case 'r':state->mode = (int)(7247);break;case 'w':state->mode = (int)(31153);break;case 'a':state->mode = (int)(1);break;case '+':free(state);return ((void *)(0));case 'b':break;case 'x':exclusive = (int)(1);break;case 'f':state->strategy = (int)(1);break;case 'h':state->strategy = (int)(2);break;case 'R':state->strategy = (int)(3);break;case 'F':state->strategy = (int)(4);break;case 'T':state->direct = (int)(1);break;default: ;}
+            state->seek = 0;
+            gz_error(state, (int)0, (void *)0);
+            state->x.pos = 0;
+            state->strm.avail_in = 0;
+        }
+
+        public static gzFile_s* gz_open(void * path, int fd, sbyte* mode)
+        {
+            gz_state* state;
+            ulong len = 0;
+            int oflag = 0;
+            int exclusive = 0;
+            if (path == ((void *)0)) return (void *)0;
+            state = (gz_state*)malloc((ulong)sizeof(gz_state));
+            if (state == ((void *)0)) return (void *)0;
+            state->size = 0;
+            state->want = 8192;
+            state->msg = (void *)0;
+            state->mode = 0;
+            state->level = -1;
+            state->strategy = 0;
+            state->direct = 0;
+            while ((*mode) != 0) {
+if (((*mode) >= '0') && (*mode <= '9')) state->level = *mode - '0'; else switch (*mode){
+case 'r':state->mode = 7247;
+                            break;case 'w':state->mode = 31153;
+                            break;case 'a':state->mode = 1;
+                            break;case '+':free(state);return (void *)0;case 'b':break;case 'x':exclusive = 1;
+                            break;case 'f':state->strategy = 1;
+                            break;case 'h':state->strategy = 2;
+                            break;case 'R':state->strategy = 3;
+                            break;case 'F':state->strategy = 4;
+                            break;case 'T':state->direct = 1;
+                            break;default: ;}
 mode++;}
-			if ((state->mode) == (0)) {
-free(state);return ((void *)(0));}
+            if (state->mode == 0) {
+free(state);return (void *)0;}
 
-			if ((state->mode) == (7247)) {
-if ((state->direct) != 0) {
-free(state);return ((void *)(0));}
-state->direct = (int)(1);}
+            if (state->mode == 7247) {
+if (state->direct != 0) {
+free(state);return (void *)0;}
+state->direct = 1;
+            }
 
-			if ((fd) == (-2)) {
-len = (ulong)(wcstombs(((void *)(0)), path, (ulong)(0)));if ((len) == ((ulong)(-1))) len = (ulong)(0);}
- else len = (ulong)(strlen((sbyte*)(path)));
-			state->path = (sbyte*)(malloc((ulong)(len + 1)));
-			if ((state->path) == ((void *)(0))) {
-free(state);return ((void *)(0));}
+            if (fd == (-2)) {
+len = (ulong)wcstombs((void *)0, path, 0);if (len == ((ulong)-1)) len = 0;
+            }
+ else len = strlen((sbyte*)path);
+            state->path = (sbyte*)malloc(len + 1);
+            if (state->path == ((void *)0)) {
+free(state);return (void *)0;}
 
-			if ((fd) == (-2)) if ((len) != 0) wcstombs(state->path, path, (ulong)(len + 1)); else *(state->path) = (sbyte)(0); else (void)(snprintf(state->path, (ulong)(len + 1), "%s", (sbyte*)(path)));
-			oflag = (int)(32768 | ((state->mode) == (7247)?0:(1 | 256 | ((exclusive) != 0?1024:0) | ((state->mode) == (31153)?512:8))));
-			state->fd = (int)((fd) > (-1)?fd:((fd) == (-2)?_wopen(path, (int)(oflag), (int)(0666)):open((sbyte*)(path), (int)(oflag), (int)(0666))));
-			if ((state->fd) == (-1)) {
-free(state->path);free(state);return ((void *)(0));}
+            if (fd == (-2)) if (len != 0) wcstombs(state->path, path, (ulong)(len + 1)); else *state->path = (sbyte)0; else (void)snprintf(state->path, (ulong)(len + 1), "%s", (sbyte*)path);
+            oflag = 32768 | (state->mode == 7247 ? 0 : (1 | 256 | (exclusive != 0 ? 1024 : 0) | (state->mode == 31153 ? 512 : 8)));
+            state->fd = (int)(fd > (-1)?fd:(fd == (-2)?_wopen(path, oflag, 0666) :open((sbyte*)path, oflag, 0666)));
+            if (state->fd == (-1)) {
+free(state->path);free(state);return (void *)0;}
 
-			if ((state->mode) == (1)) {
-_lseeki64((int)(state->fd), (long)(0), (int)(2));state->mode = (int)(31153);}
+            if (state->mode == 1) {
+_lseeki64(state->fd, 0, 2);state->mode = 31153;
+            }
 
-			if ((state->mode) == (7247)) {
-state->start = (long)(_lseeki64((int)(state->fd), (long)(0), (int)(1)));if ((state->start) == (-1)) state->start = (long)(0);}
+            if (state->mode == 7247) {
+state->start = (long)_lseeki64(state->fd, 0, 1);if (state->start == (-1)) state->start = 0;
+            }
 
-			gz_reset(state);
-			return (gzFile_s*)(state);
-		}
+            gz_reset(state);
+            return (gzFile_s*)state;
+        }
 
-		public static gzFile_s* gzopen(sbyte* path, sbyte* mode)
-		{
-			return gz_open(path, (int)(-1), mode);
-		}
+        public static gzFile_s* gzopen(sbyte* path, sbyte* mode)
+        {
+            return gz_open(path, -1, mode);
+        }
 
-		public static gzFile_s* gzopen64(sbyte* path, sbyte* mode)
-		{
-			return gz_open(path, (int)(-1), mode);
-		}
+        public static gzFile_s* gzopen64(sbyte* path, sbyte* mode)
+        {
+            return gz_open(path, -1, mode);
+        }
 
-		public static gzFile_s* gzdopen(int fd, sbyte* mode)
-		{
-			sbyte* path;
-			gzFile_s* gz;
-			if (((fd) == (-1)) || ((path = (sbyte*)(malloc((ulong)(7 + 3 * sizeof(int))))) == ((void *)(0)))) return ((void *)(0));
-			(void)(snprintf(path, (ulong)(7 + 3 * sizeof(int)), "<fd:%d>", (int)(fd)));
-			gz = gz_open(path, (int)(fd), mode);
-			free(path);
-			return gz;
-		}
+        public static gzFile_s* gzdopen(int fd, sbyte* mode)
+        {
+            sbyte* path;
+            gzFile_s* gz;
+            if ((fd == (-1)) || ((path = (sbyte*)malloc((ulong)(7 + 3 * sizeof(int)))) == ((void *)0))) return (void *)0;
+            (void)snprintf(path, (ulong)(7 + 3 * sizeof(int)), "<fd:%d>", (int)fd);
+            gz = gz_open(path, fd, mode);
+            free(path);
+            return gz;
+        }
 
-		public static gzFile_s* gzopen_w(ushort* path, sbyte* mode)
-		{
-			return gz_open(path, (int)(-2), mode);
-		}
+        public static gzFile_s* gzopen_w(ushort* path, sbyte* mode)
+        {
+            return gz_open(path, -2, mode);
+        }
 
-		public static int gzbuffer(gzFile_s* file, uint size)
-		{
-			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(-1);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) && (state->mode != 31153)) return (int)(-1);
-			if (state->size != 0) return (int)(-1);
-			if ((size << 1) < (size)) return (int)(-1);
-			if ((size) < (2)) size = (uint)(2);
-			state->want = (uint)(size);
-			return (int)(0);
-		}
+        public static int gzbuffer(gzFile_s* file, uint size)
+        {
+            gz_state* state;
+            if (file == ((void *)0)) return -1;
+            state = (gz_state*)file;
+            if ((state->mode != 7247) && (state->mode != 31153)) return -1;
+            if (state->size != 0) return -1;
+            if ((size << 1) < size) return -1;
+            if (size < 2) size = 2;
+            state->want = size;
+            return 0;
+        }
 
-		public static int gzrewind(gzFile_s* file)
-		{
-			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(-1);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return (int)(-1);
-			if ((_lseeki64((int)(state->fd), (long)(state->start), (int)(0))) == (-1)) return (int)(-1);
-			gz_reset(state);
-			return (int)(0);
-		}
+        public static int gzrewind(gzFile_s* file)
+        {
+            gz_state* state;
+            if (file == ((void *)0)) return -1;
+            state = (gz_state*)file;
+            if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return -1;
+            if (_lseeki64(state->fd, state->start, 0) == (-1)) return -1;
+            gz_reset(state);
+            return 0;
+        }
 
-		public static long gzseek64(gzFile_s* file, long offset, int whence)
-		{
-			uint n = 0;
-			long ret = 0;
-			gz_state* state;
-			if ((file) == ((void *)(0))) return (long)(-1);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) && (state->mode != 31153)) return (long)(-1);
-			if ((state->err != 0) && (state->err != (-5))) return (long)(-1);
-			if ((whence != 0) && (whence != 1)) return (long)(-1);
-			if ((whence) == (0)) offset -= (long)(state->x.pos); else if ((state->seek) != 0) offset += (long)(state->skip);
-			state->seek = (int)(0);
-			if ((((state->mode) == (7247)) && ((state->how) == (1))) && ((state->x.pos + offset) >= (0))) {
-ret = (long)(_lseeki64((int)(state->fd), (long)(offset - state->x.have), (int)(1)));if ((ret) == (-1)) return (long)(-1);state->x.have = (uint)(0);state->eof = (int)(0);state->past = (int)(0);state->seek = (int)(0);gz_error(state, (int)(0), ((void *)(0)));state->strm.avail_in = (uint)(0);state->x.pos += (long)(offset);return (long)(state->x.pos);}
+        public static long gzseek64(gzFile_s* file, long offset, int whence)
+        {
+            uint n = 0;
+            long ret = 0;
+            gz_state* state;
+            if (file == ((void *)0)) return -1;
+            state = (gz_state*)file;
+            if ((state->mode != 7247) && (state->mode != 31153)) return -1;
+            if ((state->err != 0) && (state->err != (-5))) return -1;
+            if ((whence != 0) && (whence != 1)) return -1;
+            if (whence == 0) offset -= state->x.pos; else if (state->seek != 0) offset += state->skip;
+            state->seek = 0;
+            if ((state->mode == 7247) && (state->how == 1) && ((state->x.pos + offset) >= 0)) {
+ret = (long)_lseeki64(state->fd, offset - state->x.have, 1);if (ret == (-1)) return -1;
+                state->x.have = 0;
+                state->eof = 0;
+                state->past = 0;
+                state->seek = 0;
+                gz_error(state, (int)0, (void *)0);state->strm.avail_in = 0;
+                state->x.pos += offset;
+                return state->x.pos;
+            }
 
-			if ((offset) < (0)) {
-if (state->mode != 7247) return (long)(-1);offset += (long)(state->x.pos);if ((offset) < (0)) return (long)(-1);if ((gzrewind(file)) == (-1)) return (long)(-1);}
+            if (offset < 0) {
+if (state->mode != 7247) return -1;
+                offset += state->x.pos;
+                if (offset < 0) return -1;
+                if (gzrewind(file) == (-1)) return -1;
+            }
 
-			if ((state->mode) == (7247)) {
-n = (uint)(((() == ()) && ((state->x.have) > (2147483647))) || (((long)(state->x.have)) > (offset))?(uint)(offset):state->x.have);state->x.have -= (uint)(n);state->x.next += n;state->x.pos += (long)(n);offset -= (long)(n);}
+            if (state->mode == 7247) {
+n = (uint)((( == ) && (state->x.have > 2147483647)) || (((long)state->x.have) > offset)?(uint)offset:state->x.have);state->x.have -= (uint)n;state->x.next += n;state->x.pos += (long)n;offset -= (long)n;}
 
-			if ((offset) != 0) {
-state->seek = (int)(1);state->skip = (long)(offset);}
+            if (offset != 0) {
+state->seek = 1;
+                state->skip = offset;
+            }
 
-			return (long)(state->x.pos + offset);
-		}
+            return state->x.pos + offset;
+        }
 
-		public static int gzseek(gzFile_s* file, int offset, int whence)
-		{
-			long ret = 0;
-			ret = (long)(gzseek64(file, (long)(offset), (int)(whence)));
-			return (int)((ret) == ((int)(ret))?(int)(ret):-1);
-		}
+        public static int gzseek(gzFile_s* file, int offset, int whence)
+        {
+            long ret = 0;
+            ret = gzseek64(file, offset, whence);
+            return ret == ((int)ret) ? (int)ret : -1;
+        }
 
-		public static long gztell64(gzFile_s* file)
-		{
-			gz_state* state;
-			if ((file) == ((void *)(0))) return (long)(-1);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) && (state->mode != 31153)) return (long)(-1);
-			return (long)(state->x.pos + ((state->seek) != 0?state->skip:0));
-		}
+        public static long gztell64(gzFile_s* file)
+        {
+            gz_state* state;
+            if (file == ((void *)0)) return -1;
+            state = (gz_state*)file;
+            if ((state->mode != 7247) && (state->mode != 31153)) return -1;
+            return state->x.pos + (state->seek != 0 ? state->skip : 0);
+        }
 
-		public static int gztell(gzFile_s* file)
-		{
-			long ret = 0;
-			ret = (long)(gztell64(file));
-			return (int)((ret) == ((int)(ret))?(int)(ret):-1);
-		}
+        public static int gztell(gzFile_s* file)
+        {
+            long ret = 0;
+            ret = gztell64(file);
+            return ret == ((int)ret) ? (int)ret : -1;
+        }
 
-		public static long gzoffset64(gzFile_s* file)
-		{
-			long offset = 0;
-			gz_state* state;
-			if ((file) == ((void *)(0))) return (long)(-1);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) && (state->mode != 31153)) return (long)(-1);
-			offset = (long)(_lseeki64((int)(state->fd), (long)(0), (int)(1)));
-			if ((offset) == (-1)) return (long)(-1);
-			if ((state->mode) == (7247)) offset -= (long)(state->strm.avail_in);
-			return (long)(offset);
-		}
+        public static long gzoffset64(gzFile_s* file)
+        {
+            long offset = 0;
+            gz_state* state;
+            if (file == ((void *)0)) return -1;
+            state = (gz_state*)file;
+            if ((state->mode != 7247) && (state->mode != 31153)) return -1;
+            offset = (long)_lseeki64(state->fd, 0, 1);
+            if (offset == (-1)) return -1;
+            if (state->mode == 7247) offset -= state->strm.avail_in;
+            return offset;
+        }
 
-		public static int gzoffset(gzFile_s* file)
-		{
-			long ret = 0;
-			ret = (long)(gzoffset64(file));
-			return (int)((ret) == ((int)(ret))?(int)(ret):-1);
-		}
+        public static int gzoffset(gzFile_s* file)
+        {
+            long ret = 0;
+            ret = gzoffset64(file);
+            return ret == ((int)ret) ? (int)ret : -1;
+        }
 
-		public static int gzeof(gzFile_s* file)
-		{
-			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(0);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) && (state->mode != 31153)) return (int)(0);
-			return (int)((state->mode) == (7247)?state->past:0);
-		}
+        public static int gzeof(gzFile_s* file)
+        {
+            gz_state* state;
+            if (file == ((void *)0)) return 0;
+            state = (gz_state*)file;
+            if ((state->mode != 7247) && (state->mode != 31153)) return 0;
+            return state->mode == 7247 ? state->past : 0;
+        }
 
-		public static sbyte* gzerror(gzFile_s* file, int* errnum)
-		{
-			gz_state* state;
-			if ((file) == ((void *)(0))) return ((void *)(0));
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) && (state->mode != 31153)) return ((void *)(0));
-			if (errnum != ((void *)(0))) *errnum = (int)(state->err);
-			return (state->err) == (-4)?"out of memory":((state->msg) == ((void *)(0))?"":state->msg);
-		}
+        public static sbyte* gzerror(gzFile_s* file, int* errnum)
+        {
+            gz_state* state;
+            if (file == ((void *)0)) return (void *)0;
+            state = (gz_state*)file;
+            if ((state->mode != 7247) && (state->mode != 31153)) return (void *)0;
+            if (errnum != ((void *)0)) *errnum = state->err;
+            return state->err == (-4)?"out of memory":(state->msg == ((void *)0)?"":state->msg);
+        }
 
-		public static void gzclearerr(gzFile_s* file)
-		{
-			gz_state* state;
-			if ((file) == ((void *)(0))) return;
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) && (state->mode != 31153)) return;
-			if ((state->mode) == (7247)) {
-state->eof = (int)(0);state->past = (int)(0);}
+        public static void gzclearerr(gzFile_s* file)
+        {
+            gz_state* state;
+            if (file == ((void *)0)) return;
+            state = (gz_state*)file;
+            if ((state->mode != 7247) && (state->mode != 31153)) return;
+            if (state->mode == 7247) {
+state->eof = 0;
+                state->past = 0;
+            }
 
-			gz_error(state, (int)(0), ((void *)(0)));
-		}
+            gz_error(state, (int)0, (void *)0);
+        }
 
-		public static void gz_error(gz_state* state, int err, sbyte* msg)
-		{
-			if (state->msg != ((void *)(0))) {
-if (state->err != (-4)) free(state->msg);state->msg = ((void *)(0));}
+        public static void gz_error(gz_state* state, int err, sbyte* msg)
+        {
+            if (state->msg != ((void *)0)) {
+if (state->err != (-4)) free(state->msg);state->msg = (void *)0;}
 
-			if ((err != 0) && (err != (-5))) state->x.have = (uint)(0);
-			state->err = (int)(err);
-			if ((msg) == ((void *)(0))) return;
-			if ((err) == (-4)) return;
-			if ((state->msg = (sbyte*)(malloc((ulong)(strlen(state->path) + strlen(msg) + 3)))) == ((void *)(0))) {
-state->err = (int)(-4);return;}
+            if ((err != 0) && (err != (-5))) state->x.have = 0;
+            state->err = err;
+            if (msg == ((void *)0)) return;
+            if (err == (-4)) return;
+            if ((state->msg = (sbyte*)malloc(strlen(state->path) + strlen(msg) + 3)) == ((void *)0)) {
+state->err = -4;
+                return;}
 
-			(void)(snprintf(state->msg, (ulong)(strlen(state->path) + strlen(msg) + 3), "%s%s%s", state->path, ": ", msg));
-		}
+            (void)snprintf(state->msg, (ulong)(strlen(state->path) + strlen(msg) + 3), "%s%s%s", state->path, ": ", msg);
+        }
 
 }
 }

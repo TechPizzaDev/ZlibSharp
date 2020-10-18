@@ -54,40 +54,45 @@ namespace ZlibSharp
 		{
 			z_stream_s stream = new z_stream_s();
 			int err = 0;
-			uint max = (uint)(-1);
+			uint max = (uint)-1;
 			int len = 0;int left = 0;
 			byte* buf = stackalloc byte[1];
-			len = (int)(*sourceLen);
+			len = *sourceLen;
 			if ((*destLen) != 0) {
-left = (int)(*destLen);*destLen = (int)(0);}
+left = *destLen;
+                *destLen = 0;
+            }
  else {
-left = (int)(1);dest = buf;}
+left = 1;
+                dest = buf;}
 
 			stream.next_in = source;
-			stream.avail_in = (uint)(0);
-			stream.zalloc = (zalloc_delegate)(0);
-			stream.zfree = (zfree_delegate)(0);
-			stream.opaque = (void *)(0);
-			err = (int)(inflateInit_((&stream), "1.2.11", (int)(sizeof(z_stream_s))));
-			if (err != 0) return (int)(err);
+			stream.avail_in = 0;
+			stream.zalloc = (zalloc_delegate)0;
+			stream.zfree = (zfree_delegate)0;
+			stream.opaque = (void *)0;
+			err = (int)inflateInit_(&stream, "1.2.11", sizeof(z_stream_s));
+			if (err != 0) return err;
 			stream.next_out = dest;
-			stream.avail_out = (uint)(0);
+			stream.avail_out = 0;
 			do {
-if ((stream.avail_out) == (0)) {
-stream.avail_out = (uint)((left) > ((int)(max))?max:(uint)(left));left -= (int)(stream.avail_out);}
-if ((stream.avail_in) == (0)) {
-stream.avail_in = (uint)((len) > ((int)(max))?max:(uint)(len));len -= (int)(stream.avail_in);}
-err = (int)(inflate(&stream, (int)(0)));}
- while ((err) == (0));
+if (stream.avail_out == 0) {
+stream.avail_out = left > ((int)max) ? max : (uint)left;
+                    left -= (int)stream.avail_out;}
+if (stream.avail_in == 0) {
+stream.avail_in = len > ((int)max) ? max : (uint)len;
+                    len -= (int)stream.avail_in;}
+err = (int)inflate(&stream, 0);}
+ while (err == 0);
 			*sourceLen -= (int)(len + stream.avail_in);
-			if (dest != buf) *destLen = (int)(stream.total_out); else if (((stream.total_out) != 0) && ((err) == (-5))) left = (int)(1);
+			if (dest != buf) *destLen = stream.total_out; else if ((stream.total_out != 0) && (err == (-5))) left = 1;
 			inflateEnd(&stream);
-			return (int)((err) == (1)?0:(err) == (2)?(-3):((err) == (-5)) && (left + stream.avail_out)?(-3):err);
+			return err == 1 ? 0 : err == 2 ? (-3) : (err == (-5)) && (left + stream.avail_out) ? (-3) : err;
 		}
 
 		public static int uncompress(byte* dest, int* destLen, byte* source, int sourceLen)
 		{
-			return (int)(uncompress2(dest, destLen, source, &sourceLen));
+			return uncompress2(dest, destLen, source, &sourceLen);
 		}
 
 }

@@ -77,156 +77,205 @@ namespace ZlibSharp
 		public static int gz_load(gz_state* state, byte* buf, uint len, uint* have)
 		{
 			int ret = 0;
-			uint get = 0;uint max = (uint)(((uint)(-1) >> 2) + 1);
-			*have = (uint)(0);
+			uint get = 0;uint max = (uint)(((uint)-1 >> 2) + 1);
+			*have = 0;
 			do {
-get = (uint)(len - *have);if ((get) > (max)) get = (uint)(max);ret = (int)(read((int)(state->fd), buf + *have, (uint)(get)));if (ret <= 0) break;*have += ((uint)(ret));}
- while ((*have) < (len));
-			if ((ret) < (0)) {
-gz_error(state, (int)(-1), strerror((int)(*_errno())));return (int)(-1);}
+get = len - *have;
+                if (get > max) get = max;
+                ret = (int)read(state->fd, buf + *have, get);if (ret <= 0) break;*have += (uint)ret;}
+ while ((*have) < len);
+			if (ret < 0) {
+gz_error(state, -1, strerror((int)*_errno()));return -1;
+            }
 
-			if ((ret) == (0)) state->eof = (int)(1);
-			return (int)(0);
+			if (ret == 0) state->eof = 1;
+			return 0;
 		}
 
 		public static int gz_avail(gz_state* state)
 		{
 			uint got = 0;
-			z_stream_s strm = &(state->strm);
-			if ((state->err != 0) && (state->err != (-5))) return (int)(-1);
-			if ((state->eof) == (0)) {
-if ((strm.avail_in) != 0) {
-byte* p = state->_in_;byte* q = strm.next_in;uint n = (uint)(strm.avail_in);do {
-*p++ = (byte)(*q++);}
+			z_stream_s strm = &state->strm;
+			if ((state->err != 0) && (state->err != (-5))) return -1;
+			if (state->eof == 0) {
+if (strm.avail_in != 0) {
+byte* p = state->_in_;byte* q = strm.next_in;uint n = strm.avail_in;
+                    do {
+*p++ = *q++;
+                    }
  while ((--n) != 0);}
-if ((gz_load(state, state->_in_ + strm.avail_in, (uint)(state->size - strm.avail_in), &got)) == (-1)) return (int)(-1);strm.avail_in += (uint)(got);strm.next_in = state->_in_;}
+if (gz_load(state, state->_in_ + strm.avail_in, state->size - strm.avail_in, &got) == (-1)) return -1;
+                strm.avail_in += got;
+                strm.next_in = state->_in_;}
 
-			return (int)(0);
+			return 0;
 		}
 
 		public static int gz_look(gz_state* state)
 		{
-			z_stream_s strm = &(state->strm);
-			if ((state->size) == (0)) {
-state->_in_ = (byte*)(malloc((ulong)(state->want)));state->_out_ = (byte*)(malloc((ulong)(state->want << 1)));if (((state->_in_) == ((void *)(0))) || ((state->_out_) == ((void *)(0)))) {
-free(state->_out_);free(state->_in_);gz_error(state, (int)(-4), "out of memory");return (int)(-1);}
-state->size = (uint)(state->want);state->strm.zalloc = null;state->strm.zfree = null;state->strm.opaque = null;state->strm.avail_in = (uint)(0);state->strm.next_in = null;if (inflateInit2_((&(state->strm)), (int)(15 + 16), "1.2.11", (int)(sizeof(z_stream_s))) != 0) {
-free(state->_out_);free(state->_in_);state->size = (uint)(0);gz_error(state, (int)(-4), "out of memory");return (int)(-1);}
+			z_stream_s strm = &state->strm;
+			if (state->size == 0) {
+state->_in_ = (byte*)malloc((ulong)state->want);state->_out_ = (byte*)malloc((ulong)(state->want << 1));if ((state->_in_ == ((void *)0)) || (state->_out_ == ((void *)0))) {
+free(state->_out_);free(state->_in_);gz_error(state, -4, "out of memory");return -1;
+                }
+state->size = state->want;
+                state->strm.zalloc = null;state->strm.zfree = null;state->strm.opaque = null;state->strm.avail_in = 0;
+                state->strm.next_in = null;if (inflateInit2_(&state->strm, 15 + 16, "1.2.11", sizeof(z_stream_s)) != 0) {
+free(state->_out_);free(state->_in_);state->size = 0;
+                    gz_error(state, -4, "out of memory");return -1;
+                }
 }
 
-			if ((strm.avail_in) < (2)) {
-if ((gz_avail(state)) == (-1)) return (int)(-1);if ((strm.avail_in) == (0)) return (int)(0);}
+			if (strm.avail_in < 2) {
+if (gz_avail(state) == (-1)) return -1;
+                if (strm.avail_in == 0) return 0;
+            }
 
-			if ((((strm.avail_in) > (1)) && ((strm.next_in[0]) == (31))) && ((strm.next_in[1]) == (139))) {
-inflateReset(strm);state->how = (int)(2);state->direct = (int)(0);return (int)(0);}
+			if ((strm.avail_in > 1) && (strm.next_in[0] == 31) && (strm.next_in[1] == 139)) {
+inflateReset(strm);state->how = 2;
+                state->direct = 0;
+                return 0;
+            }
 
-			if ((state->direct) == (0)) {
-strm.avail_in = (uint)(0);state->eof = (int)(1);state->x.have = (uint)(0);return (int)(0);}
+			if (state->direct == 0) {
+strm.avail_in = 0;
+                state->eof = 1;
+                state->x.have = 0;
+                return 0;
+            }
 
 			state->x.next = state->_out_;
-			if ((strm.avail_in) != 0) {
-memcpy(state->x.next, strm.next_in, (ulong)(strm.avail_in));state->x.have = (uint)(strm.avail_in);strm.avail_in = (uint)(0);}
+			if (strm.avail_in != 0) {
+memcpy(state->x.next, strm.next_in, (ulong)strm.avail_in);state->x.have = strm.avail_in;
+                strm.avail_in = 0;
+            }
 
-			state->how = (int)(1);
-			state->direct = (int)(1);
-			return (int)(0);
+			state->how = 1;
+			state->direct = 1;
+			return 0;
 		}
 
 		public static int gz_decomp(gz_state* state)
 		{
-			int ret = (int)(0);
+			int ret = 0;
 			uint had = 0;
-			z_stream_s strm = &(state->strm);
-			had = (uint)(strm.avail_out);
+			z_stream_s strm = &state->strm;
+			had = strm.avail_out;
 			do {
-if (((strm.avail_in) == (0)) && ((gz_avail(state)) == (-1))) return (int)(-1);if ((strm.avail_in) == (0)) {
-gz_error(state, (int)(-5), "unexpected end of file");break;}
-ret = (int)(inflate(strm, (int)(0)));if (((ret) == (-2)) || ((ret) == (2))) {
-gz_error(state, (int)(-2), "internal error: inflate stream corrupt");return (int)(-1);}
-if ((ret) == (-4)) {
-gz_error(state, (int)(-4), "out of memory");return (int)(-1);}
-if ((ret) == (-3)) {
-gz_error(state, (int)(-3), (strm.msg) == ((void *)(0))?"compressed data error":strm.msg);return (int)(-1);}
+if ((strm.avail_in == 0) && (gz_avail(state) == (-1))) return -1;
+                if (strm.avail_in == 0) {
+gz_error(state, -5, "unexpected end of file");break;}
+ret = (int)inflate(strm, 0);if ((ret == (-2)) || (ret == 2)) {
+gz_error(state, -2, "internal error: inflate stream corrupt");return -1;
+                }
+if (ret == (-4)) {
+gz_error(state, -4, "out of memory");return -1;
+                }
+if (ret == (-3)) {
+gz_error(state, -3, strm.msg == ((void *)0)?"compressed data error":strm.msg);return -1;
+                }
 }
- while (((strm.avail_out) != 0) && (ret != 1));
-			state->x.have = (uint)(had - strm.avail_out);
+ while ((strm.avail_out != 0) && (ret != 1));
+			state->x.have = had - strm.avail_out;
 			state->x.next = strm.next_out - state->x.have;
-			if ((ret) == (1)) state->how = (int)(0);
-			return (int)(0);
+			if (ret == 1) state->how = 0;
+			return 0;
 		}
 
 		public static int gz_fetch(gz_state* state)
 		{
-			z_stream_s strm = &(state->strm);
+			z_stream_s strm = &state->strm;
 			do {
 switch (state->how){
-case 0:if ((gz_look(state)) == (-1)) return (int)(-1);if ((state->how) == (0)) return (int)(0);break;case 1:if ((gz_load(state, state->_out_, (uint)(state->size << 1), &(state->x.have))) == (-1)) return (int)(-1);state->x.next = state->_out_;return (int)(0);case 2:strm.avail_out = (uint)(state->size << 1);strm.next_out = state->_out_;if ((gz_decomp(state)) == (-1)) return (int)(-1);}
+case 0:if (gz_look(state) == (-1)) return -1;
+                        if (state->how == 0) return 0;
+                        break;case 1:if (gz_load(state, state->_out_, state->size << 1, &state->x.have) == (-1)) return -1;
+                        state->x.next = state->_out_;return 0;
+                    case 2:strm.avail_out = state->size << 1;
+                        strm.next_out = state->_out_;if (gz_decomp(state) == (-1)) return -1;
+                }
 }
- while (((state->x.have) == (0)) && ((state->eof== 0) || ((strm.avail_in) != 0)));
-			return (int)(0);
+ while ((state->x.have == 0) && ((state->eof== 0) || (strm.avail_in != 0)));
+			return 0;
 		}
 
 		public static int gz_skip(gz_state* state, long len)
 		{
 			uint n = 0;
-			while ((len) != 0) {if ((state->x.have) != 0) {
-n = (uint)(((() == ()) && ((state->x.have) > (2147483647))) || (((long)(state->x.have)) > (len))?(uint)(len):state->x.have);state->x.have -= (uint)(n);state->x.next += n;state->x.pos += (long)(n);len -= (long)(n);}
- else if (((state->eof) != 0) && ((state->strm.avail_in) == (0))) break; else {
-if ((gz_fetch(state)) == (-1)) return (int)(-1);}}
-			return (int)(0);
+			while (len != 0) {if (state->x.have != 0) {
+n = (uint)((( == ) && (state->x.have > 2147483647)) || (((long)state->x.have) > len)?(uint)len:state->x.have);state->x.have -= (uint)n;state->x.next += n;state->x.pos += (long)n;len -= (long)n;}
+ else if ((state->eof != 0) && (state->strm.avail_in == 0)) break; else {
+if (gz_fetch(state) == (-1)) return (int)-1;}}
+			return 0;
 		}
 
 		public static ulong gz_read(gz_state* state, void * buf, ulong len)
 		{
 			ulong got = 0;
 			uint n = 0;
-			if ((len) == (0)) return (ulong)(0);
-			if ((state->seek) != 0) {
-state->seek = (int)(0);if ((gz_skip(state, (long)(state->skip))) == (-1)) return (ulong)(0);}
+			if (len == 0) return 0;
+			if (state->seek != 0) {
+state->seek = 0;
+                if (gz_skip(state, state->skip) == (-1)) return 0;
+            }
 
-			got = (ulong)(0);
+			got = 0;
 			do {
-n = (uint)(-1);if ((n) > (len)) n = (uint)(len);if ((state->x.have) != 0) {
-if ((state->x.have) < (n)) n = (uint)(state->x.have);memcpy(buf, state->x.next, (ulong)(n));state->x.next += n;state->x.have -= (uint)(n);}
- else if (((state->eof) != 0) && ((state->strm.avail_in) == (0))) {
-state->past = (int)(1);break;}
- else if (((state->how) == (0)) || ((n) < (state->size << 1))) {
-if ((gz_fetch(state)) == (-1)) return (ulong)(0);continue;}
- else if ((state->how) == (1)) {
-if ((gz_load(state, (byte*)(buf), (uint)(n), &n)) == (-1)) return (ulong)(0);}
+n = (uint)-1;if (n > len) n = (uint)len;if (state->x.have != 0) {
+if (state->x.have < n) n = state->x.have;
+                    memcpy(buf, state->x.next, (ulong)n);state->x.next += n;state->x.have -= n;
+                }
+ else if ((state->eof != 0) && (state->strm.avail_in == 0)) {
+state->past = 1;
+                    break;}
+ else if ((state->how == 0) || (n < (state->size << 1))) {
+if (gz_fetch(state) == (-1)) return 0;
+                    continue;}
+ else if (state->how == 1) {
+if (gz_load(state, (byte*)buf, n, &n) == (-1)) return 0;
+                }
  else {
-state->strm.avail_out = (uint)(n);state->strm.next_out = (byte*)(buf);if ((gz_decomp(state)) == (-1)) return (ulong)(0);n = (uint)(state->x.have);state->x.have = (uint)(0);}
-len -= (ulong)(n);buf = (sbyte*)(buf) + n;got += (ulong)(n);state->x.pos += (long)(n);}
- while ((len) != 0);
-			return (ulong)(got);
+state->strm.avail_out = n;
+                    state->strm.next_out = (byte*)buf;if (gz_decomp(state) == (-1)) return 0;
+                    n = state->x.have;
+                    state->x.have = 0;
+                }
+len -= n;
+                buf = (sbyte*)buf + n;got += n;
+                state->x.pos += n;
+            }
+ while (len != 0);
+			return got;
 		}
 
 		public static int gzread(gzFile_s* file, void * buf, uint len)
 		{
 			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(-1);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return (int)(-1);
-			if (((int)(len)) < (0)) {
-gz_error(state, (int)(-2), "request does not fit in an int");return (int)(-1);}
+			if (file == ((void *)0)) return -1;
+			state = (gz_state*)file;
+			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return -1;
+			if (((int)len) < 0) {
+gz_error(state, -2, "request does not fit in an int");return -1;
+            }
 
-			len = (uint)(gz_read(state, buf, (ulong)(len)));
-			if ((((len) == (0)) && (state->err != 0)) && (state->err != (-5))) return (int)(-1);
-			return (int)(len);
+			len = (uint)gz_read(state, buf, len);
+			if ((len == 0) && (state->err != 0) && (state->err != (-5))) return -1;
+			return (int)len;
 		}
 
 		public static ulong gzfread(void * buf, ulong size, ulong nitems, gzFile_s* file)
 		{
 			ulong len = 0;
 			gz_state* state;
-			if ((file) == ((void *)(0))) return (ulong)(0);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return (ulong)(0);
-			len = (ulong)(nitems * size);
-			if (((size) != 0) && (len / size != nitems)) {
-gz_error(state, (int)(-2), "request does not fit in a size_t");return (ulong)(0);}
+			if (file == ((void *)0)) return 0;
+			state = (gz_state*)file;
+			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return 0;
+			len = nitems * size;
+			if ((size != 0) && (len / size != nitems)) {
+gz_error(state, -2, "request does not fit in a size_t");return 0;
+            }
 
-			return (ulong)((len) != 0?gz_read(state, buf, (ulong)(len)) / size:0);
+			return len != 0 ? gz_read(state, buf, len) / size : 0;
 		}
 
 		public static int gzgetc(gzFile_s* file)
@@ -234,46 +283,53 @@ gz_error(state, (int)(-2), "request does not fit in a size_t");return (ulong)(0)
 			int ret = 0;
 			byte* buf = stackalloc byte[1];
 			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(-1);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return (int)(-1);
-			if ((state->x.have) != 0) {
-state->x.have--;state->x.pos++;return (int)(*(state->x.next)++);}
+			if (file == ((void *)0)) return -1;
+			state = (gz_state*)file;
+			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return -1;
+			if (state->x.have != 0) {
+state->x.have--;state->x.pos++;return *state->x.next++;
+            }
 
-			ret = (int)(gz_read(state, buf, (ulong)(1)));
-			return (int)((ret) < (1)?-1:buf[0]);
+			ret = (int)gz_read(state, buf, 1);
+			return ret < 1 ? -1 : buf[0];
 		}
 
 		public static int gzgetc_(gzFile_s* file)
 		{
-			return (int)(gzgetc(file));
+			return gzgetc(file);
 		}
 
 		public static int gzungetc(int c, gzFile_s* file)
 		{
 			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(-1);
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return (int)(-1);
-			if ((state->seek) != 0) {
-state->seek = (int)(0);if ((gz_skip(state, (long)(state->skip))) == (-1)) return (int)(-1);}
+			if (file == ((void *)0)) return -1;
+			state = (gz_state*)file;
+			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return -1;
+			if (state->seek != 0) {
+state->seek = 0;
+                if (gz_skip(state, state->skip) == (-1)) return -1;
+            }
 
-			if ((c) < (0)) return (int)(-1);
-			if ((state->x.have) == (0)) {
-state->x.have = (uint)(1);state->x.next = state->_out_ + (state->size << 1) - 1;state->x.next[0] = ((byte)(c));state->x.pos--;state->past = (int)(0);return (int)(c);}
+			if (c < 0) return -1;
+			if (state->x.have == 0) {
+state->x.have = 1;
+                state->x.next = state->_out_ + (state->size << 1) - 1;state->x.next[0] = (byte)c;state->x.pos--;state->past = 0;
+                return c;
+            }
 
-			if ((state->x.have) == (state->size << 1)) {
-gz_error(state, (int)(-3), "out of room to push characters");return (int)(-1);}
+			if (state->x.have == (state->size << 1)) {
+gz_error(state, -3, "out of room to push characters");return -1;
+            }
 
-			if ((state->x.next) == (state->_out_)) {
-byte* src = state->_out_ + state->x.have;byte* dest = state->_out_ + (state->size << 1);while ((src) > (state->_out_)) {*--dest = (byte)(*--src);}state->x.next = dest;}
+			if (state->x.next == state->_out_) {
+byte* src = state->_out_ + state->x.have;byte* dest = state->_out_ + (state->size << 1);while (src > state->_out_) {*--dest = *--src; }state->x.next = dest;}
 
 			state->x.have++;
 			state->x.next--;
-			state->x.next[0] = ((byte)(c));
+			state->x.next[0] = (byte)c;
 			state->x.pos--;
-			state->past = (int)(0);
-			return (int)(c);
+			state->past = 0;
+			return c;
 		}
 
 		public static sbyte* gzgets(gzFile_s* file, sbyte* buf, int len)
@@ -282,50 +338,51 @@ byte* src = state->_out_ + state->x.have;byte* dest = state->_out_ + (state->siz
 			sbyte* str;
 			byte* eol;
 			gz_state* state;
-			if ((((file) == ((void *)(0))) || ((buf) == ((void *)(0)))) || ((len) < (1))) return ((void *)(0));
-			state = (gz_state*)(file);
-			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return ((void *)(0));
-			if ((state->seek) != 0) {
-state->seek = (int)(0);if ((gz_skip(state, (long)(state->skip))) == (-1)) return ((void *)(0));}
+			if ((file == ((void *)0)) || (buf == ((void *)0)) || (len < 1)) return (void *)0;
+			state = (gz_state*)file;
+			if ((state->mode != 7247) || ((state->err != 0) && (state->err != (-5)))) return (void *)0;
+			if (state->seek != 0) {
+state->seek = 0;
+                if (gz_skip(state, state->skip) == (-1)) return (void *)0;}
 
 			str = buf;
-			left = (uint)((uint)(len) - 1);
-			if ((left) != 0) do {
-if (((state->x.have) == (0)) && ((gz_fetch(state)) == (-1))) return ((void *)(0));if ((state->x.have) == (0)) {
-state->past = (int)(1);break;}
-n = (uint)((state->x.have) > (left)?left:state->x.have);eol = (byte*)(memchr(state->x.next, (int)('
+			left = (uint)len - 1;
+			if (left != 0) do {
+if ((state->x.have == 0) && (gz_fetch(state) == (-1))) return (void *)0;if (state->x.have == 0) {
+state->past = (int)1;break;}
+n = (uint)(state->x.have > left?left:state->x.have);eol = (byte*)(memchr(state->x.next, (int)('
 '), (ulong)(n)));if (eol != ((void *)(0))) n = (uint)((uint)(eol - state->x.next) + 1);memcpy(buf, state->x.next, (ulong)(n));state->x.have -= (uint)(n);state->x.next += n;state->x.pos += (long)(n);left -= (uint)(n);buf += n;}
- while (((left) != 0) && ((eol) == ((void *)(0))));
-			if ((buf) == (str)) return ((void *)(0));
-			buf[0] = (sbyte)(0);
+ while ((left != 0) && (eol == ((void *)0)));
+			if (buf == str) return (void *)0;
+			buf[0] = (sbyte)0;
 			return str;
 		}
 
 		public static int gzdirect(gzFile_s* file)
 		{
 			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(0);
-			state = (gz_state*)(file);
-			if ((((state->mode) == (7247)) && ((state->how) == (0))) && ((state->x.have) == (0))) (void)(gz_look(state));
-			return (int)(state->direct);
+			if (file == ((void *)0)) return (int)0;
+			state = (gz_state*)file;
+			if ((state->mode == 7247) && (state->how == 0) && (state->x.have == 0)) (void)gz_look(state);
+			return (int)state->direct;
 		}
 
 		public static int gzclose_r(gzFile_s* file)
 		{
 			int ret = 0;int err = 0;
 			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(-2);
-			state = (gz_state*)(file);
-			if (state->mode != 7247) return (int)(-2);
-			if ((state->size) != 0) {
-inflateEnd(&(state->strm));free(state->_out_);free(state->_in_);}
+			if (file == ((void *)0)) return (int)-2;
+			state = (gz_state*)file;
+			if (state->mode != 7247) return (int)-2;
+			if (state->size != 0) {
+inflateEnd(&state->strm);free(state->_out_);free(state->_in_);}
 
-			err = (int)((state->err) == (-5)?(-5):0);
-			gz_error(state, (int)(0), ((void *)(0)));
+			err = (int)(state->err == (-5)?(-5):0);
+			gz_error(state, (int)0, (void *)0);
 			free(state->path);
-			ret = (int)(close((int)(state->fd)));
+			ret = (int)close((int)state->fd);
 			free(state);
-			return (int)((ret) != 0?(-1):err);
+			return (int)(ret != 0?(-1):err);
 		}
 
 }

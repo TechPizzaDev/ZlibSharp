@@ -3,84 +3,19 @@
 using System;
 using System.Runtime.InteropServices;
 using static CRuntime;
+using static ZlibSharp.ZUtil;
 
 namespace ZlibSharp
 {
-	unsafe class GZClose
-	{
-		[StructLayout(LayoutKind.Sequential)]
-		public class z_stream_s
-	{
-		public byte* next_in;
-		public uint avail_in;
-		public int total_in;
-		public byte* next_out;
-		public uint avail_out;
-		public int total_out;
-		public string msg;
-		public internal_state state;
-		public zalloc_delegate zalloc;
-		public zfree_delegate zfree;
-		public void * opaque;
-		public int data_type;
-		public int adler;
-		public int reserved;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gz_header_s
-	{
-		public int text;
-		public int time;
-		public int xflags;
-		public int os;
-		public byte* extra;
-		public uint extra_len;
-		public uint extra_max;
-		public byte* name;
-		public uint name_max;
-		public byte* comment;
-		public uint comm_max;
-		public int hcrc;
-		public int done;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gzFile_s
-	{
-		public uint have;
-		public byte* next;
-		public long pos;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gz_state
-	{
-		public gzFile_s x;
-		public int mode;
-		public int fd;
-		public sbyte* path;
-		public uint size;
-		public uint want;
-		public byte* _in_;
-		public byte* _out_;
-		public int direct;
-		public int how;
-		public long start;
-		public int eof;
-		public int past;
-		public int level;
-		public int strategy;
-		public long skip;
-		public int seek;
-		public int err;
-		public string msg;
-		public z_stream_s strm;
-		}
-		public static int gzclose(gzFile_s* file)
-		{
-			gz_state* state;
-			if ((file) == ((void *)(0))) return (int)(-2);
-			state = (gz_state*)(file);
-			return (int)((state->mode) == (7247)?gzclose_r(file):gzclose_w(file));
-		}
-
-}
+    unsafe class GZClose
+    {
+        public static int gzclose(gzFile_s* file)
+        {
+            gz_state* state;
+            if (file == ((void*)0))
+                return -2;
+            state = (gz_state*)file;
+            return (int)(state->mode == 7247 ? gzclose_r(file) : gzclose_w(file));
+        }
+    }
 }

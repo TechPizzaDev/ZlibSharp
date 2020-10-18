@@ -2,784 +2,1190 @@
 
 using System;
 using System.Runtime.InteropServices;
-using static CRuntime;
+using static ZlibSharp.ZUtil;
 
 namespace ZlibSharp
 {
-	unsafe class Trees
-	{
-		public static sbyte*[] z_errmsg = new sbyte[10];
-		public static byte[] _length_code = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 12, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28 };
-		public static byte[] _dist_code = { 0, 1, 2, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 16, 17, 18, 18, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29 };
-		public static int[] extra_lbits = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0 };
-		public static int[] extra_dbits = { 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13 };
-		public static int[] extra_blbits = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7 };
-		public static byte[] bl_order = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
-		public static ct_data_s[] static_ltree = { { { 12 }, { 8 } }, { { 140 }, { 8 } }, { { 76 }, { 8 } }, { { 204 }, { 8 } }, { { 44 }, { 8 } }, { { 172 }, { 8 } }, { { 108 }, { 8 } }, { { 236 }, { 8 } }, { { 28 }, { 8 } }, { { 156 }, { 8 } }, { { 92 }, { 8 } }, { { 220 }, { 8 } }, { { 60 }, { 8 } }, { { 188 }, { 8 } }, { { 124 }, { 8 } }, { { 252 }, { 8 } }, { { 2 }, { 8 } }, { { 130 }, { 8 } }, { { 66 }, { 8 } }, { { 194 }, { 8 } }, { { 34 }, { 8 } }, { { 162 }, { 8 } }, { { 98 }, { 8 } }, { { 226 }, { 8 } }, { { 18 }, { 8 } }, { { 146 }, { 8 } }, { { 82 }, { 8 } }, { { 210 }, { 8 } }, { { 50 }, { 8 } }, { { 178 }, { 8 } }, { { 114 }, { 8 } }, { { 242 }, { 8 } }, { { 10 }, { 8 } }, { { 138 }, { 8 } }, { { 74 }, { 8 } }, { { 202 }, { 8 } }, { { 42 }, { 8 } }, { { 170 }, { 8 } }, { { 106 }, { 8 } }, { { 234 }, { 8 } }, { { 26 }, { 8 } }, { { 154 }, { 8 } }, { { 90 }, { 8 } }, { { 218 }, { 8 } }, { { 58 }, { 8 } }, { { 186 }, { 8 } }, { { 122 }, { 8 } }, { { 250 }, { 8 } }, { { 6 }, { 8 } }, { { 134 }, { 8 } }, { { 70 }, { 8 } }, { { 198 }, { 8 } }, { { 38 }, { 8 } }, { { 166 }, { 8 } }, { { 102 }, { 8 } }, { { 230 }, { 8 } }, { { 22 }, { 8 } }, { { 150 }, { 8 } }, { { 86 }, { 8 } }, { { 214 }, { 8 } }, { { 54 }, { 8 } }, { { 182 }, { 8 } }, { { 118 }, { 8 } }, { { 246 }, { 8 } }, { { 14 }, { 8 } }, { { 142 }, { 8 } }, { { 78 }, { 8 } }, { { 206 }, { 8 } }, { { 46 }, { 8 } }, { { 174 }, { 8 } }, { { 110 }, { 8 } }, { { 238 }, { 8 } }, { { 30 }, { 8 } }, { { 158 }, { 8 } }, { { 94 }, { 8 } }, { { 222 }, { 8 } }, { { 62 }, { 8 } }, { { 190 }, { 8 } }, { { 126 }, { 8 } }, { { 254 }, { 8 } }, { { 1 }, { 8 } }, { { 129 }, { 8 } }, { { 65 }, { 8 } }, { { 193 }, { 8 } }, { { 33 }, { 8 } }, { { 161 }, { 8 } }, { { 97 }, { 8 } }, { { 225 }, { 8 } }, { { 17 }, { 8 } }, { { 145 }, { 8 } }, { { 81 }, { 8 } }, { { 209 }, { 8 } }, { { 49 }, { 8 } }, { { 177 }, { 8 } }, { { 113 }, { 8 } }, { { 241 }, { 8 } }, { { 9 }, { 8 } }, { { 137 }, { 8 } }, { { 73 }, { 8 } }, { { 201 }, { 8 } }, { { 41 }, { 8 } }, { { 169 }, { 8 } }, { { 105 }, { 8 } }, { { 233 }, { 8 } }, { { 25 }, { 8 } }, { { 153 }, { 8 } }, { { 89 }, { 8 } }, { { 217 }, { 8 } }, { { 57 }, { 8 } }, { { 185 }, { 8 } }, { { 121 }, { 8 } }, { { 249 }, { 8 } }, { { 5 }, { 8 } }, { { 133 }, { 8 } }, { { 69 }, { 8 } }, { { 197 }, { 8 } }, { { 37 }, { 8 } }, { { 165 }, { 8 } }, { { 101 }, { 8 } }, { { 229 }, { 8 } }, { { 21 }, { 8 } }, { { 149 }, { 8 } }, { { 85 }, { 8 } }, { { 213 }, { 8 } }, { { 53 }, { 8 } }, { { 181 }, { 8 } }, { { 117 }, { 8 } }, { { 245 }, { 8 } }, { { 13 }, { 8 } }, { { 141 }, { 8 } }, { { 77 }, { 8 } }, { { 205 }, { 8 } }, { { 45 }, { 8 } }, { { 173 }, { 8 } }, { { 109 }, { 8 } }, { { 237 }, { 8 } }, { { 29 }, { 8 } }, { { 157 }, { 8 } }, { { 93 }, { 8 } }, { { 221 }, { 8 } }, { { 61 }, { 8 } }, { { 189 }, { 8 } }, { { 125 }, { 8 } }, { { 253 }, { 8 } }, { { 19 }, { 9 } }, { { 275 }, { 9 } }, { { 147 }, { 9 } }, { { 403 }, { 9 } }, { { 83 }, { 9 } }, { { 339 }, { 9 } }, { { 211 }, { 9 } }, { { 467 }, { 9 } }, { { 51 }, { 9 } }, { { 307 }, { 9 } }, { { 179 }, { 9 } }, { { 435 }, { 9 } }, { { 115 }, { 9 } }, { { 371 }, { 9 } }, { { 243 }, { 9 } }, { { 499 }, { 9 } }, { { 11 }, { 9 } }, { { 267 }, { 9 } }, { { 139 }, { 9 } }, { { 395 }, { 9 } }, { { 75 }, { 9 } }, { { 331 }, { 9 } }, { { 203 }, { 9 } }, { { 459 }, { 9 } }, { { 43 }, { 9 } }, { { 299 }, { 9 } }, { { 171 }, { 9 } }, { { 427 }, { 9 } }, { { 107 }, { 9 } }, { { 363 }, { 9 } }, { { 235 }, { 9 } }, { { 491 }, { 9 } }, { { 27 }, { 9 } }, { { 283 }, { 9 } }, { { 155 }, { 9 } }, { { 411 }, { 9 } }, { { 91 }, { 9 } }, { { 347 }, { 9 } }, { { 219 }, { 9 } }, { { 475 }, { 9 } }, { { 59 }, { 9 } }, { { 315 }, { 9 } }, { { 187 }, { 9 } }, { { 443 }, { 9 } }, { { 123 }, { 9 } }, { { 379 }, { 9 } }, { { 251 }, { 9 } }, { { 507 }, { 9 } }, { { 7 }, { 9 } }, { { 263 }, { 9 } }, { { 135 }, { 9 } }, { { 391 }, { 9 } }, { { 71 }, { 9 } }, { { 327 }, { 9 } }, { { 199 }, { 9 } }, { { 455 }, { 9 } }, { { 39 }, { 9 } }, { { 295 }, { 9 } }, { { 167 }, { 9 } }, { { 423 }, { 9 } }, { { 103 }, { 9 } }, { { 359 }, { 9 } }, { { 231 }, { 9 } }, { { 487 }, { 9 } }, { { 23 }, { 9 } }, { { 279 }, { 9 } }, { { 151 }, { 9 } }, { { 407 }, { 9 } }, { { 87 }, { 9 } }, { { 343 }, { 9 } }, { { 215 }, { 9 } }, { { 471 }, { 9 } }, { { 55 }, { 9 } }, { { 311 }, { 9 } }, { { 183 }, { 9 } }, { { 439 }, { 9 } }, { { 119 }, { 9 } }, { { 375 }, { 9 } }, { { 247 }, { 9 } }, { { 503 }, { 9 } }, { { 15 }, { 9 } }, { { 271 }, { 9 } }, { { 143 }, { 9 } }, { { 399 }, { 9 } }, { { 79 }, { 9 } }, { { 335 }, { 9 } }, { { 207 }, { 9 } }, { { 463 }, { 9 } }, { { 47 }, { 9 } }, { { 303 }, { 9 } }, { { 175 }, { 9 } }, { { 431 }, { 9 } }, { { 111 }, { 9 } }, { { 367 }, { 9 } }, { { 239 }, { 9 } }, { { 495 }, { 9 } }, { { 31 }, { 9 } }, { { 287 }, { 9 } }, { { 159 }, { 9 } }, { { 415 }, { 9 } }, { { 95 }, { 9 } }, { { 351 }, { 9 } }, { { 223 }, { 9 } }, { { 479 }, { 9 } }, { { 63 }, { 9 } }, { { 319 }, { 9 } }, { { 191 }, { 9 } }, { { 447 }, { 9 } }, { { 127 }, { 9 } }, { { 383 }, { 9 } }, { { 255 }, { 9 } }, { { 511 }, { 9 } }, { { 0 }, { 7 } }, { { 64 }, { 7 } }, { { 32 }, { 7 } }, { { 96 }, { 7 } }, { { 16 }, { 7 } }, { { 80 }, { 7 } }, { { 48 }, { 7 } }, { { 112 }, { 7 } }, { { 8 }, { 7 } }, { { 72 }, { 7 } }, { { 40 }, { 7 } }, { { 104 }, { 7 } }, { { 24 }, { 7 } }, { { 88 }, { 7 } }, { { 56 }, { 7 } }, { { 120 }, { 7 } }, { { 4 }, { 7 } }, { { 68 }, { 7 } }, { { 36 }, { 7 } }, { { 100 }, { 7 } }, { { 20 }, { 7 } }, { { 84 }, { 7 } }, { { 52 }, { 7 } }, { { 116 }, { 7 } }, { { 3 }, { 8 } }, { { 131 }, { 8 } }, { { 67 }, { 8 } }, { { 195 }, { 8 } }, { { 35 }, { 8 } }, { { 163 }, { 8 } }, { { 99 }, { 8 } }, { { 227 }, { 8 } } };
-		public static ct_data_s[] static_dtree = { { { 0 }, { 5 } }, { { 16 }, { 5 } }, { { 8 }, { 5 } }, { { 24 }, { 5 } }, { { 4 }, { 5 } }, { { 20 }, { 5 } }, { { 12 }, { 5 } }, { { 28 }, { 5 } }, { { 2 }, { 5 } }, { { 18 }, { 5 } }, { { 10 }, { 5 } }, { { 26 }, { 5 } }, { { 6 }, { 5 } }, { { 22 }, { 5 } }, { { 14 }, { 5 } }, { { 30 }, { 5 } }, { { 1 }, { 5 } }, { { 17 }, { 5 } }, { { 9 }, { 5 } }, { { 25 }, { 5 } }, { { 5 }, { 5 } }, { { 21 }, { 5 } }, { { 13 }, { 5 } }, { { 29 }, { 5 } }, { { 3 }, { 5 } }, { { 19 }, { 5 } }, { { 11 }, { 5 } }, { { 27 }, { 5 } }, { { 7 }, { 5 } }, { { 23 }, { 5 } } };
-		public static int[] base_length = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 0 };
-		public static int[] base_dist = { 0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384, 24576 };
-		public static static_tree_desc_s static_l_desc = (static_tree_desc_s)({ static_ltree, extra_lbits, 256 + 1, (256 + 1 + 29), 15 });
-		public static static_tree_desc_s static_d_desc = (static_tree_desc_s)({ static_dtree, extra_dbits, 0, 30, 15 });
-		public static static_tree_desc_s static_bl_desc = (static_tree_desc_s)({ (ct_data_s*)(0), extra_blbits, 0, 19, 7 });
-		[StructLayout(LayoutKind.Sequential)]
-		public class z_stream_s
-	{
-		public byte* next_in;
-		public uint avail_in;
-		public int total_in;
-		public byte* next_out;
-		public uint avail_out;
-		public int total_out;
-		public string msg;
-		public internal_state state;
-		public zalloc_delegate zalloc;
-		public zfree_delegate zfree;
-		public void * opaque;
-		public int data_type;
-		public int adler;
-		public int reserved;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gz_header_s
-	{
-		public int text;
-		public int time;
-		public int xflags;
-		public int os;
-		public byte* extra;
-		public uint extra_len;
-		public uint extra_max;
-		public byte* name;
-		public uint name_max;
-		public byte* comment;
-		public uint comm_max;
-		public int hcrc;
-		public int done;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct gzFile_s
-	{
-		public uint have;
-		public byte* next;
-		public long pos;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct fc
-	{
-		public ushort freq;
-		public ushort code;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct dl
-	{
-		public ushort dad;
-		public ushort len;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct ct_data_s
-	{
-		public union ct_data_s::(anonymous at C:\Projects\Repos\ZlibSharp\zlib/deflate.h:69:5) fc;
-		public union ct_data_s::(anonymous at C:\Projects\Repos\ZlibSharp\zlib/deflate.h:73:5) dl;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct tree_desc_s
-	{
-		public ct_data_s* dyn_tree;
-		public int max_code;
-		public static_tree_desc_s* stat_desc;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public class internal_state
-	{
-		public z_stream_s strm;
-		public int status;
-		public byte* pending_buf;
-		public int pending_buf_size;
-		public byte* pending_out;
-		public int pending;
-		public int wrap;
-		public gz_header_s* gzhead;
-		public int gzindex;
-		public byte method;
-		public int last_flush;
-		public uint w_size;
-		public uint w_bits;
-		public uint w_mask;
-		public byte* window;
-		public int window_size;
-		public ushort* prev;
-		public ushort* head;
-		public uint ins_h;
-		public uint hash_size;
-		public uint hash_bits;
-		public uint hash_mask;
-		public uint hash_shift;
-		public int block_start;
-		public uint match_length;
-		public uint prev_match;
-		public int match_available;
-		public uint strstart;
-		public uint match_start;
-		public uint lookahead;
-		public uint prev_length;
-		public uint max_chain_length;
-		public uint max_lazy_match;
-		public int level;
-		public int strategy;
-		public uint good_match;
-		public int nice_match;
-		public fixed ct_data_s dyn_ltree[(2 * (256 + 1 + 29) + 1)];
-		public fixed ct_data_s dyn_dtree[2 * 30 + 1];
-		public fixed ct_data_s bl_tree[2 * 19 + 1];
-		public tree_desc_s l_desc;
-		public tree_desc_s d_desc;
-		public tree_desc_s bl_desc;
-		public fixed ushort bl_count[15 + 1];
-		public fixed int heap[2 * (256 + 1 + 29) + 1];
-		public int heap_len;
-		public int heap_max;
-		public fixed byte depth[2 * (256 + 1 + 29) + 1];
-		public byte* l_buf;
-		public uint lit_bufsize;
-		public uint last_lit;
-		public ushort* d_buf;
-		public int opt_len;
-		public int static_len;
-		public uint matches;
-		public uint insert;
-		public ushort bi_buf;
-		public int bi_valid;
-		public int high_water;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct static_tree_desc_s
-	{
-		public ct_data_s* static_tree;
-		public int* extra_bits;
-		public int extra_base;
-		public int elems;
-		public int max_length;
-		}
-		public static void tr_static_init()
-		{
-		}
+    public unsafe class Trees
+    {
+        public static ct_data_s[] static_ltree = new ct_data_s[Deflate.L_CODES + 2] {
+            new ct_data_s( 12,  8), new ct_data_s(140,  8), new ct_data_s( 76,  8), new ct_data_s(204,  8), new ct_data_s( 44,  8),
+            new ct_data_s(172,  8), new ct_data_s(108,  8), new ct_data_s(236,  8), new ct_data_s( 28,  8), new ct_data_s(156,  8),
+            new ct_data_s( 92,  8), new ct_data_s(220,  8), new ct_data_s( 60,  8), new ct_data_s(188,  8), new ct_data_s(124,  8),
+            new ct_data_s(252,  8), new ct_data_s(  2,  8), new ct_data_s(130,  8), new ct_data_s( 66,  8), new ct_data_s(194,  8),
+            new ct_data_s( 34,  8), new ct_data_s(162,  8), new ct_data_s( 98,  8), new ct_data_s(226,  8), new ct_data_s( 18,  8),
+            new ct_data_s(146,  8), new ct_data_s( 82,  8), new ct_data_s(210,  8), new ct_data_s( 50,  8), new ct_data_s(178,  8),
+            new ct_data_s(114,  8), new ct_data_s(242,  8), new ct_data_s( 10,  8), new ct_data_s(138,  8), new ct_data_s( 74,  8),
+            new ct_data_s(202,  8), new ct_data_s( 42,  8), new ct_data_s(170,  8), new ct_data_s(106,  8), new ct_data_s(234,  8),
+            new ct_data_s( 26,  8), new ct_data_s(154,  8), new ct_data_s( 90,  8), new ct_data_s(218,  8), new ct_data_s( 58,  8),
+            new ct_data_s(186,  8), new ct_data_s(122,  8), new ct_data_s(250,  8), new ct_data_s(  6,  8), new ct_data_s(134,  8),
+            new ct_data_s( 70,  8), new ct_data_s(198,  8), new ct_data_s( 38,  8), new ct_data_s(166,  8), new ct_data_s(102,  8),
+            new ct_data_s(230,  8), new ct_data_s( 22,  8), new ct_data_s(150,  8), new ct_data_s( 86,  8), new ct_data_s(214,  8),
+            new ct_data_s( 54,  8), new ct_data_s(182,  8), new ct_data_s(118,  8), new ct_data_s(246,  8), new ct_data_s( 14,  8),
+            new ct_data_s(142,  8), new ct_data_s( 78,  8), new ct_data_s(206,  8), new ct_data_s( 46,  8), new ct_data_s(174,  8),
+            new ct_data_s(110,  8), new ct_data_s(238,  8), new ct_data_s( 30,  8), new ct_data_s(158,  8), new ct_data_s( 94,  8),
+            new ct_data_s(222,  8), new ct_data_s( 62,  8), new ct_data_s(190,  8), new ct_data_s(126,  8), new ct_data_s(254,  8),
+            new ct_data_s(  1,  8), new ct_data_s(129,  8), new ct_data_s( 65,  8), new ct_data_s(193,  8), new ct_data_s( 33,  8),
+            new ct_data_s(161,  8), new ct_data_s( 97,  8), new ct_data_s(225,  8), new ct_data_s( 17,  8), new ct_data_s(145,  8),
+            new ct_data_s( 81,  8), new ct_data_s(209,  8), new ct_data_s( 49,  8), new ct_data_s(177,  8), new ct_data_s(113,  8),
+            new ct_data_s(241,  8), new ct_data_s(  9,  8), new ct_data_s(137,  8), new ct_data_s( 73,  8), new ct_data_s(201,  8),
+            new ct_data_s( 41,  8), new ct_data_s(169,  8), new ct_data_s(105,  8), new ct_data_s(233,  8), new ct_data_s( 25,  8),
+            new ct_data_s(153,  8), new ct_data_s( 89,  8), new ct_data_s(217,  8), new ct_data_s( 57,  8), new ct_data_s(185,  8),
+            new ct_data_s(121,  8), new ct_data_s(249,  8), new ct_data_s(  5,  8), new ct_data_s(133,  8), new ct_data_s( 69,  8),
+            new ct_data_s(197,  8), new ct_data_s( 37,  8), new ct_data_s(165,  8), new ct_data_s(101,  8), new ct_data_s(229,  8),
+            new ct_data_s( 21,  8), new ct_data_s(149,  8), new ct_data_s( 85,  8), new ct_data_s(213,  8), new ct_data_s( 53,  8),
+            new ct_data_s(181,  8), new ct_data_s(117,  8), new ct_data_s(245,  8), new ct_data_s( 13,  8), new ct_data_s(141,  8),
+            new ct_data_s( 77,  8), new ct_data_s(205,  8), new ct_data_s( 45,  8), new ct_data_s(173,  8), new ct_data_s(109,  8),
+            new ct_data_s(237,  8), new ct_data_s( 29,  8), new ct_data_s(157,  8), new ct_data_s( 93,  8), new ct_data_s(221,  8),
+            new ct_data_s( 61,  8), new ct_data_s(189,  8), new ct_data_s(125,  8), new ct_data_s(253,  8), new ct_data_s( 19,  9),
+            new ct_data_s(275,  9), new ct_data_s(147,  9), new ct_data_s(403,  9), new ct_data_s( 83,  9), new ct_data_s(339,  9),
+            new ct_data_s(211,  9), new ct_data_s(467,  9), new ct_data_s( 51,  9), new ct_data_s(307,  9), new ct_data_s(179,  9),
+            new ct_data_s(435,  9), new ct_data_s(115,  9), new ct_data_s(371,  9), new ct_data_s(243,  9), new ct_data_s(499,  9),
+            new ct_data_s( 11,  9), new ct_data_s(267,  9), new ct_data_s(139,  9), new ct_data_s(395,  9), new ct_data_s( 75,  9),
+            new ct_data_s(331,  9), new ct_data_s(203,  9), new ct_data_s(459,  9), new ct_data_s( 43,  9), new ct_data_s(299,  9),
+            new ct_data_s(171,  9), new ct_data_s(427,  9), new ct_data_s(107,  9), new ct_data_s(363,  9), new ct_data_s(235,  9),
+            new ct_data_s(491,  9), new ct_data_s( 27,  9), new ct_data_s(283,  9), new ct_data_s(155,  9), new ct_data_s(411,  9),
+            new ct_data_s( 91,  9), new ct_data_s(347,  9), new ct_data_s(219,  9), new ct_data_s(475,  9), new ct_data_s( 59,  9),
+            new ct_data_s(315,  9), new ct_data_s(187,  9), new ct_data_s(443,  9), new ct_data_s(123,  9), new ct_data_s(379,  9),
+            new ct_data_s(251,  9), new ct_data_s(507,  9), new ct_data_s(  7,  9), new ct_data_s(263,  9), new ct_data_s(135,  9),
+            new ct_data_s(391,  9), new ct_data_s( 71,  9), new ct_data_s(327,  9), new ct_data_s(199,  9), new ct_data_s(455,  9),
+            new ct_data_s( 39,  9), new ct_data_s(295,  9), new ct_data_s(167,  9), new ct_data_s(423,  9), new ct_data_s(103,  9),
+            new ct_data_s(359,  9), new ct_data_s(231,  9), new ct_data_s(487,  9), new ct_data_s( 23,  9), new ct_data_s(279,  9),
+            new ct_data_s(151,  9), new ct_data_s(407,  9), new ct_data_s( 87,  9), new ct_data_s(343,  9), new ct_data_s(215,  9),
+            new ct_data_s(471,  9), new ct_data_s( 55,  9), new ct_data_s(311,  9), new ct_data_s(183,  9), new ct_data_s(439,  9),
+            new ct_data_s(119,  9), new ct_data_s(375,  9), new ct_data_s(247,  9), new ct_data_s(503,  9), new ct_data_s( 15,  9),
+            new ct_data_s(271,  9), new ct_data_s(143,  9), new ct_data_s(399,  9), new ct_data_s( 79,  9), new ct_data_s(335,  9),
+            new ct_data_s(207,  9), new ct_data_s(463,  9), new ct_data_s( 47,  9), new ct_data_s(303,  9), new ct_data_s(175,  9),
+            new ct_data_s(431,  9), new ct_data_s(111,  9), new ct_data_s(367,  9), new ct_data_s(239,  9), new ct_data_s(495,  9),
+            new ct_data_s( 31,  9), new ct_data_s(287,  9), new ct_data_s(159,  9), new ct_data_s(415,  9), new ct_data_s( 95,  9),
+            new ct_data_s(351,  9), new ct_data_s(223,  9), new ct_data_s(479,  9), new ct_data_s( 63,  9), new ct_data_s(319,  9),
+            new ct_data_s(191,  9), new ct_data_s(447,  9), new ct_data_s(127,  9), new ct_data_s(383,  9), new ct_data_s(255,  9),
+            new ct_data_s(511,  9), new ct_data_s(  0,  7), new ct_data_s( 64,  7), new ct_data_s( 32,  7), new ct_data_s( 96,  7),
+            new ct_data_s( 16,  7), new ct_data_s( 80,  7), new ct_data_s( 48,  7), new ct_data_s(112,  7), new ct_data_s(  8,  7),
+            new ct_data_s( 72,  7), new ct_data_s( 40,  7), new ct_data_s(104,  7), new ct_data_s( 24,  7), new ct_data_s( 88,  7),
+            new ct_data_s( 56,  7), new ct_data_s(120,  7), new ct_data_s(  4,  7), new ct_data_s( 68,  7), new ct_data_s( 36,  7),
+            new ct_data_s(100,  7), new ct_data_s( 20,  7), new ct_data_s( 84,  7), new ct_data_s( 52,  7), new ct_data_s(116,  7),
+            new ct_data_s(  3,  8), new ct_data_s(131,  8), new ct_data_s( 67,  8), new ct_data_s(195,  8), new ct_data_s( 35,  8),
+            new ct_data_s(163,  8), new ct_data_s( 99,  8), new ct_data_s(227,  8)
+        };
 
-		public static void _tr_init(internal_state s)
-		{
-			tr_static_init();
-			s.l_desc.dyn_tree = s.dyn_ltree;
-			s.l_desc.stat_desc = &static_l_desc;
-			s.d_desc.dyn_tree = s.dyn_dtree;
-			s.d_desc.stat_desc = &static_d_desc;
-			s.bl_desc.dyn_tree = s.bl_tree;
-			s.bl_desc.stat_desc = &static_bl_desc;
-			s.bi_buf = (ushort)(0);
-			s.bi_valid = (int)(0);
-			init_block(s);
-		}
+        public static ct_data_s[] static_dtree = new ct_data_s[Deflate.D_CODES] {
+            new ct_data_s( 0, 5), new ct_data_s(16, 5), new ct_data_s( 8, 5), new ct_data_s(24, 5), new ct_data_s( 4, 5),
+            new ct_data_s(20, 5), new ct_data_s(12, 5), new ct_data_s(28, 5), new ct_data_s( 2, 5), new ct_data_s(18, 5),
+            new ct_data_s(10, 5), new ct_data_s(26, 5), new ct_data_s( 6, 5), new ct_data_s(22, 5), new ct_data_s(14, 5),
+            new ct_data_s(30, 5), new ct_data_s( 1, 5), new ct_data_s(17, 5), new ct_data_s( 9, 5), new ct_data_s(25, 5),
+            new ct_data_s( 5, 5), new ct_data_s(21, 5), new ct_data_s(13, 5), new ct_data_s(29, 5), new ct_data_s( 3, 5),
+            new ct_data_s(19, 5), new ct_data_s(11, 5), new ct_data_s(27, 5), new ct_data_s( 7, 5), new ct_data_s(23, 5)
+        };
 
-		public static void init_block(internal_state s)
-		{
-			int n = 0;
-			for (n = (int)(0); (n) < (256 + 1 + 29); n++) {s.dyn_ltree[n].fc.freq = (ushort)(0);}
-			for (n = (int)(0); (n) < (30); n++) {s.dyn_dtree[n].fc.freq = (ushort)(0);}
-			for (n = (int)(0); (n) < (19); n++) {s.bl_tree[n].fc.freq = (ushort)(0);}
-			s.dyn_ltree[256].fc.freq = (ushort)(1);
-			s.opt_len = (int)(s.static_len = (int)(0L));
-			s.last_lit = (uint)(s.matches = (uint)(0));
-		}
+        public static byte[] _length_code = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 12, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28 };
+        public static byte[] _dist_code = { 0, 1, 2, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 16, 17, 18, 18, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29 };
+        public static int[] extra_lbits = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0 };
+        public static int[] extra_dbits = { 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13 };
+        public static int[] extra_blbits = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7 };
+        public static byte[] bl_order = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
+        public static int[] base_length = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 0 };
+        public static int[] base_dist = { 0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384, 24576 };
+        public static static_tree_desc_s static_l_desc = new static_tree_desc_s(static_ltree, extra_lbits, 256 + 1, 256 + 1 + 29, 15);
+        public static static_tree_desc_s static_d_desc = new static_tree_desc_s(static_dtree, extra_dbits, 0, 30, 15);
+        public static static_tree_desc_s static_bl_desc = new static_tree_desc_s(null, extra_blbits, 0, 19, 7);
 
-		public static void pqdownheap(internal_state s, ct_data_s* tree, int k)
-		{
-			int v = (int)(s.heap[k]);
-			int j = (int)(k << 1);
-			while (j <= s.heap_len) {
-if (((j) < (s.heap_len)) && (((tree[s.heap[j + 1]].fc.freq) < (tree[s.heap[j]].fc.freq)) || (((tree[s.heap[j + 1]].fc.freq) == (tree[s.heap[j]].fc.freq)) && (s.depth[s.heap[j + 1]] <= s.depth[s.heap[j]])))) {
-j++;}
-if ((((tree[v].fc.freq) < (tree[s.heap[j]].fc.freq)) || (((tree[v].fc.freq) == (tree[s.heap[j]].fc.freq)) && (s.depth[v] <= s.depth[s.heap[j]])))) break;s.heap[k] = (int)(s.heap[j]);k = (int)(j);j <<= 1;}
-			s.heap[k] = (int)(v);
-		}
+        public static void tr_static_init()
+        {
+        }
 
-		public static void gen_bitlen(internal_state s, tree_desc_s* desc)
-		{
-			ct_data_s* tree = desc->dyn_tree;
-			int max_code = (int)(desc->max_code);
-			ct_data_s* stree = desc->stat_desc->static_tree;
-			int* extra = desc->stat_desc->extra_bits;
-			int _base_ = (int)(desc->stat_desc->extra_base);
-			int max_length = (int)(desc->stat_desc->max_length);
-			int h = 0;
-			int n = 0;int m = 0;
-			int bits = 0;
-			int xbits = 0;
-			ushort f = 0;
-			int overflow = (int)(0);
-			for (bits = (int)(0); bits <= 15; bits++) {s.bl_count[bits] = (ushort)(0);}
-			tree[s.heap[s.heap_max]].dl.len = (ushort)(0);
-			for (h = (int)(s.heap_max + 1); (h) < (2 * (256 + 1 + 29) + 1); h++) {
-n = (int)(s.heap[h]);bits = (int)(tree[tree[n].dl.dad].dl.len + 1);if ((bits) > (max_length)) bits = (int)(max_length) , overflow++;tree[n].dl.len = ((ushort)(bits));if ((n) > (max_code)) continue;s.bl_count[bits]++;xbits = (int)(0);if ((n) >= (_base_)) xbits = (int)(extra[n - _base_]);f = (ushort)(tree[n].fc.freq);s.opt_len += (int)((int)(f) * (uint)(bits + xbits));if ((stree) != null) s.static_len += (int)((int)(f) * (uint)(stree[n].dl.len + xbits));}
-			if ((overflow) == (0)) return;
-			do {
-bits = (int)(max_length - 1);while ((s.bl_count[bits]) == (0)) {bits--;}s.bl_count[bits]--;s.bl_count[bits + 1] += (ushort)(2);s.bl_count[max_length]--;overflow -= (int)(2);}
- while ((overflow) > (0));
-			for (bits = (int)(max_length); bits != 0; bits--) {
-n = (int)(s.bl_count[bits]);while (n != 0) {
-m = (int)(s.heap[--h]);if ((m) > (max_code)) continue;if ((uint)(tree[m].dl.len) != (uint)(bits)) {
-s.opt_len += (int)((bits - tree[m].dl.len) * tree[m].fc.freq);tree[m].dl.len = ((ushort)(bits));}
-n--;}}
-		}
+        public static void _tr_init(internal_state s)
+        {
+            tr_static_init();
+            s.l_desc.dyn_tree = s.dyn_ltree;
+            s.l_desc.stat_desc = static_l_desc;
+            s.d_desc.dyn_tree = s.dyn_dtree;
+            s.d_desc.stat_desc = static_d_desc;
+            s.bl_desc.dyn_tree = s.bl_tree;
+            s.bl_desc.stat_desc = static_bl_desc;
+            s.bi_buf = 0;
+            s.bi_valid = 0;
+            init_block(s);
+        }
 
-		public static void gen_codes(ct_data_s* tree, int max_code, ushort* bl_count)
-		{
-			ushort* next_code = stackalloc ushort[15 + 1];
-			uint code = (uint)(0);
-			int bits = 0;
-			int n = 0;
-			for (bits = (int)(1); bits <= 15; bits++) {
-code = (uint)((code + bl_count[bits - 1]) << 1);next_code[bits] = ((ushort)(code));}
-			for (n = (int)(0); n <= max_code; n++) {
-int len = (int)(tree[n].dl.len);if ((len) == (0)) continue;tree[n].fc.code = ((ushort)(bi_reverse((uint)(next_code[len]++), (int)(len))));}
-		}
+        public static void init_block(internal_state s)
+        {
+            int n = 0;
+            for (n = 0; n < (256 + 1 + 29); n++)
+            { s.dyn_ltree[n].fc.freq = 0; }
+            for (n = 0; n < 30; n++)
+            { s.dyn_dtree[n].fc.freq = 0; }
+            for (n = 0; n < 19; n++)
+            { s.bl_tree[n].fc.freq = 0; }
+            s.dyn_ltree[256].fc.freq = 1;
+            s.opt_len = s.static_len = (int)0L;
+            s.last_lit = s.matches = 0;
+        }
 
-		public static void build_tree(internal_state s, tree_desc_s* desc)
-		{
-			ct_data_s* tree = desc->dyn_tree;
-			ct_data_s* stree = desc->stat_desc->static_tree;
-			int elems = (int)(desc->stat_desc->elems);
-			int n = 0;int m = 0;
-			int max_code = (int)(-1);
-			int node = 0;
-			s.heap_len = (int)(0) , s.heap_max = (int)(2 * (256 + 1 + 29) + 1);
-			for (n = (int)(0); (n) < (elems); n++) {
-if (tree[n].fc.freq != 0) {
-s.heap[++(s.heap_len)] = (int)(max_code = (int)(n));s.depth[n] = (byte)(0);}
- else {
-tree[n].dl.len = (ushort)(0);}
-}
-			while ((s.heap_len) < (2)) {
-node = (int)(s.heap[++(s.heap_len)] = (int)((max_code) < (2)?++max_code:0));tree[node].fc.freq = (ushort)(1);s.depth[node] = (byte)(0);s.opt_len--;if ((stree) != null) s.static_len -= (int)(stree[node].dl.len);}
-			desc->max_code = (int)(max_code);
-			for (n = (int)(s.heap_len / 2); (n) >= (1); n--) {pqdownheap(s, tree, (int)(n));}
-			node = (int)(elems);
-			do {
-{
-n = (int)(s.heap[1]);s.heap[1] = (int)(s.heap[s.heap_len--]);pqdownheap(s, tree, (int)(1));}
-m = (int)(s.heap[1]);s.heap[--(s.heap_max)] = (int)(n);s.heap[--(s.heap_max)] = (int)(m);tree[node].fc.freq = (ushort)(tree[n].fc.freq + tree[m].fc.freq);s.depth[node] = ((byte)(((s.depth[n]) >= (s.depth[m])?s.depth[n]:s.depth[m]) + 1));tree[n].dl.dad = (ushort)(tree[m].dl.dad = ((ushort)(node)));s.heap[1] = (int)(node++);pqdownheap(s, tree, (int)(1));}
- while ((s.heap_len) >= (2));
-			s.heap[--(s.heap_max)] = (int)(s.heap[1]);
-			gen_bitlen(s, desc);
-			gen_codes(tree, (int)(max_code), s.bl_count);
-		}
+        public static void pqdownheap(internal_state s, ct_data_s[] tree, int k)
+        {
+            int v = s.heap[k];
+            int j = k << 1;
+            while (j <= s.heap_len)
+            {
+                if ((j < s.heap_len) && ((tree[s.heap[j + 1]].fc.freq < tree[s.heap[j]].fc.freq) || ((tree[s.heap[j + 1]].fc.freq == tree[s.heap[j]].fc.freq) && (s.depth[s.heap[j + 1]] <= s.depth[s.heap[j]]))))
+                {
+                    j++;
+                }
+                if ((tree[v].fc.freq < tree[s.heap[j]].fc.freq) || ((tree[v].fc.freq == tree[s.heap[j]].fc.freq) && (s.depth[v] <= s.depth[s.heap[j]])))
+                    break;
+                s.heap[k] = s.heap[j];
+                k = j;
+                j <<= 1;
+            }
+            s.heap[k] = v;
+        }
 
-		public static void scan_tree(internal_state s, ct_data_s* tree, int max_code)
-		{
-			int n = 0;
-			int prevlen = (int)(-1);
-			int curlen = 0;
-			int nextlen = (int)(tree[0].dl.len);
-			int count = (int)(0);
-			int max_count = (int)(7);
-			int min_count = (int)(4);
-			if ((nextlen) == (0)) max_count = (int)(138) , min_count = (int)(3);
-			tree[max_code + 1].dl.len = ((ushort)(0xffff));
-			for (n = (int)(0); n <= max_code; n++) {
-curlen = (int)(nextlen);nextlen = (int)(tree[n + 1].dl.len);if (((++count) < (max_count)) && ((curlen) == (nextlen))) {
-continue;}
- else if ((count) < (min_count)) {
-s.bl_tree[curlen].fc.freq += (ushort)(count);}
- else if (curlen != 0) {
-if (curlen != prevlen) s.bl_tree[curlen].fc.freq++;s.bl_tree[16].fc.freq++;}
- else if (count <= 10) {
-s.bl_tree[17].fc.freq++;}
- else {
-s.bl_tree[18].fc.freq++;}
-count = (int)(0);prevlen = (int)(curlen);if ((nextlen) == (0)) {
-max_count = (int)(138) , min_count = (int)(3);}
- else if ((curlen) == (nextlen)) {
-max_count = (int)(6) , min_count = (int)(3);}
- else {
-max_count = (int)(7) , min_count = (int)(4);}
-}
-		}
+        public static void gen_bitlen(internal_state s, ref tree_desc_s desc)
+        {
+            ct_data_s[] tree = desc.dyn_tree;
+            int max_code = desc.max_code;
+            ct_data_s[] stree = desc.stat_desc.static_tree;
+            int[] extra = desc.stat_desc.extra_bits;
+            int _base_ = desc.stat_desc.extra_base;
+            int max_length = desc.stat_desc.max_length;
+            int h = 0;
+            int n = 0;
+            int m = 0;
+            int bits = 0;
+            int xbits = 0;
+            ushort f = 0;
+            int overflow = 0;
+            for (bits = 0; bits <= 15; bits++)
+            { s.bl_count[bits] = 0; }
+            tree[s.heap[s.heap_max]].dl.len = 0;
+            for (h = s.heap_max + 1; h < (2 * (256 + 1 + 29) + 1); h++)
+            {
+                n = s.heap[h];
+                bits = tree[tree[n].dl.dad].dl.len + 1;
+                if (bits > max_length)
+                {
+                    bits = max_length;
+                    overflow++;
+                }
+                tree[n].dl.len = (ushort)bits;
+                if (n > max_code)
+                    continue;
+                s.bl_count[bits]++;
+                xbits = 0;
+                if (n >= _base_)
+                    xbits = extra[n - _base_];
+                f = tree[n].fc.freq;
+                s.opt_len += (int)((int)f * (uint)(bits + xbits));
+                if (stree != null)
+                    s.static_len += (int)((int)f * (uint)(stree[n].dl.len + xbits));
+            }
+            if (overflow == 0)
+                return;
+            do
+            {
+                bits = max_length - 1;
+                while (s.bl_count[bits] == 0)
+                { bits--; }
+                s.bl_count[bits]--;
+                s.bl_count[bits + 1] += 2;
+                s.bl_count[max_length]--;
+                overflow -= 2;
+            }
+            while (overflow > 0);
+            for (bits = max_length; bits != 0; bits--)
+            {
+                n = s.bl_count[bits];
+                while (n != 0)
+                {
+                    m = s.heap[--h];
+                    if (m > max_code)
+                        continue;
+                    if (tree[m].dl.len != (uint)bits)
+                    {
+                        s.opt_len += (bits - tree[m].dl.len) * tree[m].fc.freq;
+                        tree[m].dl.len = (ushort)bits;
+                    }
+                    n--;
+                }
+            }
+        }
 
-		public static void send_tree(internal_state s, ct_data_s* tree, int max_code)
-		{
-			int n = 0;
-			int prevlen = (int)(-1);
-			int curlen = 0;
-			int nextlen = (int)(tree[0].dl.len);
-			int count = (int)(0);
-			int max_count = (int)(7);
-			int min_count = (int)(4);
-			if ((nextlen) == (0)) max_count = (int)(138) , min_count = (int)(3);
-			for (n = (int)(0); n <= max_code; n++) {
-curlen = (int)(nextlen);nextlen = (int)(tree[n + 1].dl.len);if (((++count) < (max_count)) && ((curlen) == (nextlen))) {
-continue;}
- else if ((count) < (min_count)) {
-do {
-{
-int len = (int)(s.bl_tree[curlen].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(s.bl_tree[curlen].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((s.bl_tree[curlen].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-}
- while (--count != 0);}
- else if (curlen != 0) {
-if (curlen != prevlen) {
-{
-int len = (int)(s.bl_tree[curlen].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(s.bl_tree[curlen].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((s.bl_tree[curlen].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-count--;}
-{
-int len = (int)(s.bl_tree[16].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(s.bl_tree[16].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((s.bl_tree[16].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-{
-int len = (int)(2);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(count - 3);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(count - 3) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-}
- else if (count <= 10) {
-{
-int len = (int)(s.bl_tree[17].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(s.bl_tree[17].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((s.bl_tree[17].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-{
-int len = (int)(3);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(count - 3);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(count - 3) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-}
- else {
-{
-int len = (int)(s.bl_tree[18].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(s.bl_tree[18].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((s.bl_tree[18].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-{
-int len = (int)(7);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(count - 11);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(count - 11) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-}
-count = (int)(0);prevlen = (int)(curlen);if ((nextlen) == (0)) {
-max_count = (int)(138) , min_count = (int)(3);}
- else if ((curlen) == (nextlen)) {
-max_count = (int)(6) , min_count = (int)(3);}
- else {
-max_count = (int)(7) , min_count = (int)(4);}
-}
-		}
+        public static void gen_codes(ct_data_s[] tree, int max_code, ushort[] bl_count)
+        {
+            ushort* next_code = stackalloc ushort[15 + 1];
+            uint code = 0;
+            int bits = 0;
+            int n = 0;
+            for (bits = 1; bits <= 15; bits++)
+            {
+                code = (code + bl_count[bits - 1]) << 1;
+                next_code[bits] = (ushort)code;
+            }
+            for (n = 0; n <= max_code; n++)
+            {
+                int len = tree[n].dl.len;
+                if (len == 0)
+                    continue;
+                tree[n].fc.code = (ushort)bi_reverse(next_code[len]++, len);
+            }
+        }
 
-		public static int build_bl_tree(internal_state s)
-		{
-			int max_blindex = 0;
-			scan_tree(s, s.dyn_ltree, (int)(s.l_desc.max_code));
-			scan_tree(s, s.dyn_dtree, (int)(s.d_desc.max_code));
-			build_tree(s, (&(s.bl_desc)));
-			for (max_blindex = (int)(19 - 1); (max_blindex) >= (3); max_blindex--) {
-if (s.bl_tree[bl_order[max_blindex]].dl.len != 0) break;}
-			s.opt_len += (int)(3 * (max_blindex + 1) + 5 + 5 + 4);
-			return (int)(max_blindex);
-		}
+        public static void build_tree(internal_state s, ref tree_desc_s desc)
+        {
+            ct_data_s[] tree = desc.dyn_tree;
+            ct_data_s[] stree = desc.stat_desc.static_tree;
+            int elems = desc.stat_desc.elems;
+            int n = 0;
+            int m = 0;
+            int max_code = -1;
+            int node = 0;
+            s.heap_len = 0;
+            s.heap_max = 2 * (256 + 1 + 29) + 1;
+            for (n = 0; n < elems; n++)
+            {
+                if (tree[n].fc.freq != 0)
+                {
+                    s.heap[++s.heap_len] = max_code = n;
+                    s.depth[n] = 0;
+                }
+                else
+                {
+                    tree[n].dl.len = 0;
+                }
+            }
+            while (s.heap_len < 2)
+            {
+                node = s.heap[++s.heap_len] = max_code < 2 ? ++max_code : 0;
+                tree[node].fc.freq = 1;
+                s.depth[node] = 0;
+                s.opt_len--;
+                if (stree != null)
+                    s.static_len -= stree[node].dl.len;
+            }
+            desc.max_code = max_code;
+            for (n = s.heap_len / 2; n >= 1; n--)
+            { pqdownheap(s, tree, n); }
+            node = elems;
+            do
+            {
+                {
+                    n = s.heap[1];
+                    s.heap[1] = s.heap[s.heap_len--];
+                    pqdownheap(s, tree, 1);
+                }
+                m = s.heap[1];
+                s.heap[--s.heap_max] = n;
+                s.heap[--s.heap_max] = m;
+                tree[node].fc.freq = (ushort)(tree[n].fc.freq + tree[m].fc.freq);
+                s.depth[node] = (byte)((s.depth[n] >= s.depth[m] ? s.depth[n] : s.depth[m]) + 1);
+                tree[n].dl.dad = tree[m].dl.dad = (ushort)node;
+                s.heap[1] = node++;
+                pqdownheap(s, tree, 1);
+            }
+            while (s.heap_len >= 2);
+            s.heap[--s.heap_max] = s.heap[1];
+            gen_bitlen(s, ref desc);
+            gen_codes(tree, max_code, s.bl_count);
+        }
 
-		public static void send_all_trees(internal_state s, int lcodes, int dcodes, int blcodes)
-		{
-			int rank = 0;
-			{
-int len = (int)(5);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(lcodes - 257);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(lcodes - 257) << s.bi_valid);s.bi_valid += (int)(len);}
-}
+        public static void scan_tree(internal_state s, ct_data_s[] tree, int max_code)
+        {
+            int n = 0;
+            int prevlen = -1;
+            int curlen = 0;
+            int nextlen = tree[0].dl.len;
+            int count = 0;
+            int max_count = 7;
+            int min_count = 4;
+            if (nextlen == 0)
+            {
+                max_count = 138;
+                min_count = 3;
+            }
+            tree[max_code + 1].dl.len = 0xffff;
+            for (n = 0; n <= max_code; n++)
+            {
+                curlen = nextlen;
+                nextlen = tree[n + 1].dl.len;
+                if (((++count) < max_count) && (curlen == nextlen))
+                {
+                    continue;
+                }
+                else if (count < min_count)
+                {
+                    s.bl_tree[curlen].fc.freq += (ushort)count;
+                }
+                else if (curlen != 0)
+                {
+                    if (curlen != prevlen)
+                        s.bl_tree[curlen].fc.freq++;
+                    s.bl_tree[16].fc.freq++;
+                }
+                else if (count <= 10)
+                {
+                    s.bl_tree[17].fc.freq++;
+                }
+                else
+                {
+                    s.bl_tree[18].fc.freq++;
+                }
+                count = 0;
+                prevlen = curlen;
+                if (nextlen == 0)
+                {
+                    max_count = 138;
+                    min_count = 3;
+                }
+                else if (curlen == nextlen)
+                {
+                    max_count = 6;
+                    min_count = 3;
+                }
+                else
+                {
+                    max_count = 7;
+                    min_count = 4;
+                }
+            }
+        }
 
-			{
-int len = (int)(5);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(dcodes - 1);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(dcodes - 1) << s.bi_valid);s.bi_valid += (int)(len);}
-}
+        public static void send_tree(internal_state s, ct_data_s[] tree, int max_code)
+        {
+            int n = 0;
+            int prevlen = -1;
+            int curlen = 0;
+            int nextlen = tree[0].dl.len;
+            int count = 0;
+            int max_count = 7;
+            int min_count = 4;
+            if (nextlen == 0)
+            {
+                max_count = 138;
+                min_count = 3;
+            }
+            for (n = 0; n <= max_code; n++)
+            {
+                curlen = nextlen;
+                nextlen = tree[n + 1].dl.len;
+                if (((++count) < max_count) && (curlen == nextlen))
+                {
+                    continue;
+                }
+                else if (count < min_count)
+                {
+                    do
+                    {
+                        {
+                            int len = s.bl_tree[curlen].dl.len;
+                            if (s.bi_valid > (16 - len))
+                            {
+                                int val = s.bl_tree[curlen].fc.code;
+                                s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                                {
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                    }
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                    }
+                                }
+                                s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                                s.bi_valid += len - 16;
+                            }
+                            else
+                            {
+                                s.bi_buf |= (ushort)((s.bl_tree[curlen].fc.code) << s.bi_valid);
+                                s.bi_valid += len;
+                            }
+                        }
+                    }
+                    while (--count != 0);
+                }
+                else if (curlen != 0)
+                {
+                    if (curlen != prevlen)
+                    {
+                        {
+                            int len = s.bl_tree[curlen].dl.len;
+                            if (s.bi_valid > (16 - len))
+                            {
+                                int val = s.bl_tree[curlen].fc.code;
+                                s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                                {
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                    }
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                    }
+                                }
+                                s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                                s.bi_valid += len - 16;
+                            }
+                            else
+                            {
+                                s.bi_buf |= (ushort)((s.bl_tree[curlen].fc.code) << s.bi_valid);
+                                s.bi_valid += len;
+                            }
+                        }
+                        count--;
+                    }
+                    {
+                        int len = s.bl_tree[16].dl.len;
+                        if (s.bi_valid > (16 - len))
+                        {
+                            int val = s.bl_tree[16].fc.code;
+                            s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                            {
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                }
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                }
+                            }
+                            s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                            s.bi_valid += len - 16;
+                        }
+                        else
+                        {
+                            s.bi_buf |= (ushort)((s.bl_tree[16].fc.code) << s.bi_valid);
+                            s.bi_valid += len;
+                        }
+                    }
+                    {
+                        int len = 2;
+                        if (s.bi_valid > (16 - len))
+                        {
+                            int val = count - 3;
+                            s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                            {
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                }
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                }
+                            }
+                            s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                            s.bi_valid += len - 16;
+                        }
+                        else
+                        {
+                            s.bi_buf |= (ushort)((ushort)(count - 3) << s.bi_valid);
+                            s.bi_valid += len;
+                        }
+                    }
+                }
+                else if (count <= 10)
+                {
+                    {
+                        int len = s.bl_tree[17].dl.len;
+                        if (s.bi_valid > (16 - len))
+                        {
+                            int val = s.bl_tree[17].fc.code;
+                            s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                            {
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                }
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                }
+                            }
+                            s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                            s.bi_valid += len - 16;
+                        }
+                        else
+                        {
+                            s.bi_buf |= (ushort)((s.bl_tree[17].fc.code) << s.bi_valid);
+                            s.bi_valid += len;
+                        }
+                    }
+                    {
+                        int len = 3;
+                        if (s.bi_valid > (16 - len))
+                        {
+                            int val = count - 3;
+                            s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                            {
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                }
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                }
+                            }
+                            s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                            s.bi_valid += len - 16;
+                        }
+                        else
+                        {
+                            s.bi_buf |= (ushort)((ushort)(count - 3) << s.bi_valid);
+                            s.bi_valid += len;
+                        }
+                    }
+                }
+                else
+                {
+                    {
+                        int len = s.bl_tree[18].dl.len;
+                        if (s.bi_valid > (16 - len))
+                        {
+                            int val = s.bl_tree[18].fc.code;
+                            s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                            {
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                }
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                }
+                            }
+                            s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                            s.bi_valid += len - 16;
+                        }
+                        else
+                        {
+                            s.bi_buf |= (ushort)((s.bl_tree[18].fc.code) << s.bi_valid);
+                            s.bi_valid += len;
+                        }
+                    }
+                    {
+                        int len = 7;
+                        if (s.bi_valid > (16 - len))
+                        {
+                            int val = count - 11;
+                            s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                            {
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                }
+                                {
+                                    s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                }
+                            }
+                            s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                            s.bi_valid += len - 16;
+                        }
+                        else
+                        {
+                            s.bi_buf |= (ushort)((ushort)(count - 11) << s.bi_valid);
+                            s.bi_valid += len;
+                        }
+                    }
+                }
+                count = 0;
+                prevlen = curlen;
+                if (nextlen == 0)
+                {
+                    max_count = 138;
+                    min_count = 3;
+                }
+                else if (curlen == nextlen)
+                {
+                    max_count = 6;
+                    min_count = 3;
+                }
+                else
+                {
+                    max_count = 7;
+                    min_count = 4;
+                }
+            }
+        }
 
-			{
-int len = (int)(4);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(blcodes - 4);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(blcodes - 4) << s.bi_valid);s.bi_valid += (int)(len);}
-}
+        public static int build_bl_tree(internal_state s)
+        {
+            int max_blindex = 0;
+            scan_tree(s, s.dyn_ltree, s.l_desc.max_code);
+            scan_tree(s, s.dyn_dtree, s.d_desc.max_code);
+            build_tree(s, ref s.bl_desc);
+            for (max_blindex = 19 - 1; max_blindex >= 3; max_blindex--)
+            {
+                if (s.bl_tree[bl_order[max_blindex]].dl.len != 0)
+                    break;
+            }
+            s.opt_len += 3 * (max_blindex + 1) + 5 + 5 + 4;
+            return max_blindex;
+        }
 
-			for (rank = (int)(0); (rank) < (blcodes); rank++) {
-{
-int len = (int)(3);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(s.bl_tree[bl_order[rank]].dl.len);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((s.bl_tree[bl_order[rank]].dl.len) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-}
-			send_tree(s, s.dyn_ltree, (int)(lcodes - 1));
-			send_tree(s, s.dyn_dtree, (int)(dcodes - 1));
-		}
+        public static void send_all_trees(internal_state s, int lcodes, int dcodes, int blcodes)
+        {
+            int rank = 0;
+            {
+                int len = 5;
+                if (s.bi_valid > (16 - len))
+                {
+                    int val = lcodes - 257;
+                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                    {
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                        }
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                        }
+                    }
+                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                    s.bi_valid += len - 16;
+                }
+                else
+                {
+                    s.bi_buf |= (ushort)((ushort)(lcodes - 257) << s.bi_valid);
+                    s.bi_valid += len;
+                }
+            }
 
-		public static void _tr_stored_block(internal_state s, sbyte* buf, int stored_len, int last)
-		{
-			{
-int len = (int)(3);if ((s.bi_valid) > (16 - len)) {
-int val = (int)((0 << 1) + last);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)((0 << 1) + last) << s.bi_valid);s.bi_valid += (int)(len);}
-}
+            {
+                int len = 5;
+                if (s.bi_valid > (16 - len))
+                {
+                    int val = dcodes - 1;
+                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                    {
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                        }
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                        }
+                    }
+                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                    s.bi_valid += len - 16;
+                }
+                else
+                {
+                    s.bi_buf |= (ushort)((ushort)(dcodes - 1) << s.bi_valid);
+                    s.bi_valid += len;
+                }
+            }
 
-			bi_windup(s);
-			{
-{
-s.pending_buf[s.pending++] = ((byte)(((ushort)(stored_len)) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)(((ushort)(stored_len)) >> 8));}
-}
+            {
+                int len = 4;
+                if (s.bi_valid > (16 - len))
+                {
+                    int val = blcodes - 4;
+                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                    {
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                        }
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                        }
+                    }
+                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                    s.bi_valid += len - 16;
+                }
+                else
+                {
+                    s.bi_buf |= (ushort)((ushort)(blcodes - 4) << s.bi_valid);
+                    s.bi_valid += len;
+                }
+            }
 
-			{
-{
-s.pending_buf[s.pending++] = ((byte)(((ushort)(~stored_len)) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)(((ushort)(~stored_len)) >> 8));}
-}
+            for (rank = 0; rank < blcodes; rank++)
+            {
+                {
+                    int len = 3;
+                    if (s.bi_valid > (16 - len))
+                    {
+                        int val = s.bl_tree[bl_order[rank]].dl.len;
+                        s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                        {
+                            {
+                                s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                            }
+                            {
+                                s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                            }
+                        }
+                        s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                        s.bi_valid += len - 16;
+                    }
+                    else
+                    {
+                        s.bi_buf |= (ushort)((s.bl_tree[bl_order[rank]].dl.len) << s.bi_valid);
+                        s.bi_valid += len;
+                    }
+                }
+            }
+            send_tree(s, s.dyn_ltree, lcodes - 1);
+            send_tree(s, s.dyn_dtree, dcodes - 1);
+        }
 
-			memcpy(s.pending_buf + s.pending, (byte*)(buf), (ulong)(stored_len));
-			s.pending += (int)(stored_len);
-		}
+        public static void _tr_stored_block(internal_state s, Span<byte> buf, int stored_len, int last)
+        {
+            {
+                int len = 3;
+                if (s.bi_valid > (16 - len))
+                {
+                    int val = (0 << 1) + last;
+                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                    {
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                        }
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                        }
+                    }
+                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                    s.bi_valid += len - 16;
+                }
+                else
+                {
+                    s.bi_buf |= (ushort)((ushort)((0 << 1) + last) << s.bi_valid);
+                    s.bi_valid += len;
+                }
+            }
 
-		public static void _tr_flush_bits(internal_state s)
-		{
-			bi_flush(s);
-		}
+            bi_windup(s);
+            {
+                {
+                    s.pending_buf[s.pending++] = (byte)(((ushort)stored_len) & 0xff);
+                }
+                {
+                    s.pending_buf[s.pending++] = (byte)(((ushort)stored_len) >> 8);
+                }
+            }
 
-		public static void _tr_align(internal_state s)
-		{
-			{
-int len = (int)(3);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(1 << 1);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(1 << 1) << s.bi_valid);s.bi_valid += (int)(len);}
-}
+            {
+                {
+                    s.pending_buf[s.pending++] = (byte)(((ushort)~stored_len) & 0xff);
+                }
+                {
+                    s.pending_buf[s.pending++] = (byte)(((ushort)~stored_len) >> 8);
+                }
+            }
 
-			{
-int len = (int)(static_ltree[256].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(static_ltree[256].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((static_ltree[256].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
+            buf.Slice(0, stored_len).CopyTo(s.pending_buf.AsMemory(s.pending).Span);
+            s.pending += stored_len;
+        }
 
-			bi_flush(s);
-		}
+        public static void _tr_flush_bits(internal_state s)
+        {
+            bi_flush(s);
+        }
 
-		public static void _tr_flush_block(internal_state s, sbyte* buf, int stored_len, int last)
-		{
-			int opt_lenb = 0;int static_lenb = 0;
-			int max_blindex = (int)(0);
-			if ((s.level) > (0)) {
-if ((s.strm.data_type) == (2)) s.strm.data_type = (int)(detect_data_type(s));build_tree(s, (&(s.l_desc)));build_tree(s, (&(s.d_desc)));max_blindex = (int)(build_bl_tree(s));opt_lenb = (int)((s.opt_len + 3 + 7) >> 3);static_lenb = (int)((s.static_len + 3 + 7) >> 3);if (static_lenb <= opt_lenb) opt_lenb = (int)(static_lenb);}
- else {
-opt_lenb = (int)(static_lenb = (int)(stored_len + 5));}
+        public static void _tr_align(internal_state s)
+        {
+            {
+                int len = 3;
+                if (s.bi_valid > (16 - len))
+                {
+                    int val = 1 << 1;
+                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                    {
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                        }
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                        }
+                    }
+                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                    s.bi_valid += len - 16;
+                }
+                else
+                {
+                    s.bi_buf |= (ushort)(1 << 1 << s.bi_valid);
+                    s.bi_valid += len;
+                }
+            }
 
-			if ((stored_len + 4 <= opt_lenb) && (buf != (sbyte*)(0))) {
-_tr_stored_block(s, buf, (int)(stored_len), (int)(last));}
- else if (((s.strategy) == (4)) || ((static_lenb) == (opt_lenb))) {
-{
-int len = (int)(3);if ((s.bi_valid) > (16 - len)) {
-int val = (int)((1 << 1) + last);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)((1 << 1) + last) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-compress_block(s, static_ltree, static_dtree);}
- else {
-{
-int len = (int)(3);if ((s.bi_valid) > (16 - len)) {
-int val = (int)((2 << 1) + last);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)((2 << 1) + last) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-send_all_trees(s, (int)(s.l_desc.max_code + 1), (int)(s.d_desc.max_code + 1), (int)(max_blindex + 1));compress_block(s, s.dyn_ltree, s.dyn_dtree);}
+            {
+                int len = static_ltree[256].dl.len;
+                if (s.bi_valid > (16 - len))
+                {
+                    int val = static_ltree[256].fc.code;
+                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                    {
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                        }
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                        }
+                    }
+                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                    s.bi_valid += len - 16;
+                }
+                else
+                {
+                    s.bi_buf |= (ushort)((static_ltree[256].fc.code) << s.bi_valid);
+                    s.bi_valid += len;
+                }
+            }
 
-			init_block(s);
-			if ((last) != 0) {
-bi_windup(s);}
+            bi_flush(s);
+        }
 
-		}
+        public static void _tr_flush_block(internal_state s, Span<byte> buf, int stored_len, int last)
+        {
+            int opt_lenb = 0;
+            int static_lenb = 0;
+            int max_blindex = 0;
+            if (s.level > 0)
+            {
+                if (s.strm.data_type == 2)
+                    s.strm.data_type = detect_data_type(s);
+                build_tree(s, ref s.l_desc);
+                build_tree(s, ref s.d_desc);
+                max_blindex = build_bl_tree(s);
+                opt_lenb = (s.opt_len + 3 + 7) >> 3;
+                static_lenb = (s.static_len + 3 + 7) >> 3;
+                if (static_lenb <= opt_lenb)
+                    opt_lenb = static_lenb;
+            }
+            else
+            {
+                opt_lenb = static_lenb = stored_len + 5;
+            }
 
-		public static int _tr_tally(internal_state s, uint dist, uint lc)
-		{
-			s.d_buf[s.last_lit] = ((ushort)(dist));
-			s.l_buf[s.last_lit++] = ((byte)(lc));
-			if ((dist) == (0)) {
-s.dyn_ltree[lc].fc.freq++;}
- else {
-s.matches++;dist--;s.dyn_ltree[_length_code[lc] + 256 + 1].fc.freq++;s.dyn_dtree[((dist) < (256)?_dist_code[dist]:_dist_code[256 + ((dist) >> 7)])].fc.freq++;}
+            if ((stored_len + 4 <= opt_lenb) && !buf.IsEmpty)
+            {
+                _tr_stored_block(s, buf, stored_len, last);
+            }
+            else if ((s.strategy == 4) || (static_lenb == opt_lenb))
+            {
+                {
+                    int len = 3;
+                    if (s.bi_valid > (16 - len))
+                    {
+                        int val = (1 << 1) + last;
+                        s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                        {
+                            {
+                                s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                            }
+                            {
+                                s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                            }
+                        }
+                        s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                        s.bi_valid += len - 16;
+                    }
+                    else
+                    {
+                        s.bi_buf |= (ushort)((ushort)((1 << 1) + last) << s.bi_valid);
+                        s.bi_valid += len;
+                    }
+                }
+                compress_block(s, static_ltree, static_dtree);
+            }
+            else
+            {
+                {
+                    int len = 3;
+                    if (s.bi_valid > (16 - len))
+                    {
+                        int val = (2 << 1) + last;
+                        s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                        {
+                            {
+                                s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                            }
+                            {
+                                s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                            }
+                        }
+                        s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                        s.bi_valid += len - 16;
+                    }
+                    else
+                    {
+                        s.bi_buf |= (ushort)((ushort)((2 << 1) + last) << s.bi_valid);
+                        s.bi_valid += len;
+                    }
+                }
+                send_all_trees(s, s.l_desc.max_code + 1, s.d_desc.max_code + 1, max_blindex + 1);
+                compress_block(s, s.dyn_ltree, s.dyn_dtree);
+            }
 
-			return (int)((s.last_lit) == (s.lit_bufsize - 1));
-		}
+            init_block(s);
+            if (last != 0)
+            {
+                bi_windup(s);
+            }
 
-		public static void compress_block(internal_state s, ct_data_s* ltree, ct_data_s* dtree)
-		{
-			uint dist = 0;
-			int lc = 0;
-			uint lx = (uint)(0);
-			uint code = 0;
-			int extra = 0;
-			if (s.last_lit != 0) do {
-dist = (uint)(s.d_buf[lx]);lc = (int)(s.l_buf[lx++]);if ((dist) == (0)) {
-{
-int len = (int)(ltree[lc].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(ltree[lc].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ltree[lc].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-}
- else {
-code = (uint)(_length_code[lc]);{
-int len = (int)(ltree[code + 256 + 1].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(ltree[code + 256 + 1].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ltree[code + 256 + 1].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-extra = (int)(extra_lbits[code]);if (extra != 0) {
-lc -= (int)(base_length[code]);{
-int len = (int)(extra);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(lc);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(lc) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-}
-dist--;code = (uint)((dist) < (256)?_dist_code[dist]:_dist_code[256 + ((dist) >> 7)]);{
-int len = (int)(dtree[code].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(dtree[code].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((dtree[code].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-extra = (int)(extra_dbits[code]);if (extra != 0) {
-dist -= ((uint)(base_dist[code]));{
-int len = (int)(extra);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(dist);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ushort)(dist) << s.bi_valid);s.bi_valid += (int)(len);}
-}
-}
-}
-}
- while ((lx) < (s.last_lit));
-			{
-int len = (int)(ltree[256].dl.len);if ((s.bi_valid) > (16 - len)) {
-int val = (int)(ltree[256].fc.code);s.bi_buf |= (ushort)((ushort)(val) << s.bi_valid);{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)((ushort)(val) >> (16 - s.bi_valid));s.bi_valid += (int)(len - 16);}
- else {
-s.bi_buf |= (ushort)((ltree[256].fc.code) << s.bi_valid);s.bi_valid += (int)(len);}
-}
+        }
 
-		}
+        public static bool _tr_tally(internal_state s, uint dist, uint lc)
+        {
+            var d_buf = MemoryMarshal.Cast<byte, ushort>(s.d_buf.Span);
+            var l_buf = s.l_buf.Span;
+            d_buf[s.last_lit] = (ushort)dist;
+            l_buf[s.last_lit++] = (byte)lc;
+            if (dist == 0)
+            {
+                s.dyn_ltree[lc].fc.freq++;
+            }
+            else
+            {
+                s.matches++;
+                dist--;
+                s.dyn_ltree[_length_code[lc] + 256 + 1].fc.freq++;
+                s.dyn_dtree[dist < 256 ? _dist_code[dist] : _dist_code[256 + ((dist) >> 7)]].fc.freq++;
+            }
 
-		public static int detect_data_type(internal_state s)
-		{
-			int black_mask = (int)(0xf3ffc07fUL);
-			int n = 0;
-			for (n = (int)(0); n <= 31; n++ , black_mask >>= 1) {if (((black_mask & 1)!= 0) && (s.dyn_ltree[n].fc.freq != 0)) return (int)(0);}
-			if (((s.dyn_ltree[9].fc.freq != 0) || (s.dyn_ltree[10].fc.freq != 0)) || (s.dyn_ltree[13].fc.freq != 0)) return (int)(1);
-			for (n = (int)(32); (n) < (256); n++) {if (s.dyn_ltree[n].fc.freq != 0) return (int)(1);}
-			return (int)(0);
-		}
+            return s.last_lit == (s.lit_bufsize - 1);
+        }
 
-		public static uint bi_reverse(uint code, int len)
-		{
-			uint res = (uint)(0);
-			do {
-res |= (uint)(code & 1);code >>= 1 , res <<= 1;}
- while ((--len) > (0));
-			return (uint)(res >> 1);
-		}
+        public static void compress_block(internal_state s, ct_data_s[] ltree, ct_data_s[] dtree)
+        {
+            var d_buf = MemoryMarshal.Cast<byte, ushort>(s.d_buf.Span);
+            var l_buf = s.l_buf.Span;
 
-		public static void bi_flush(internal_state s)
-		{
-			if ((s.bi_valid) == (16)) {
-{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-s.bi_buf = (ushort)(0);s.bi_valid = (int)(0);}
- else if ((s.bi_valid) >= (8)) {
-{
-s.pending_buf[s.pending++] = ((byte)(s.bi_buf));}
-s.bi_buf >>= 8;s.bi_valid -= (int)(8);}
+            uint dist = 0;
+            int lc = 0;
+            int lx = 0;
+            uint code = 0;
+            int extra = 0;
+            if (s.last_lit != 0)
+                do
+                {
+                    dist = d_buf[lx];
+                    lc = l_buf[lx++];
+                    if (dist == 0)
+                    {
+                        {
+                            int len = ltree[lc].dl.len;
+                            if (s.bi_valid > (16 - len))
+                            {
+                                int val = ltree[lc].fc.code;
+                                s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                                {
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                    }
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                    }
+                                }
+                                s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                                s.bi_valid += len - 16;
+                            }
+                            else
+                            {
+                                s.bi_buf |= (ushort)((ltree[lc].fc.code) << s.bi_valid);
+                                s.bi_valid += len;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        code = _length_code[lc];
+                        {
+                            int len = ltree[code + 256 + 1].dl.len;
+                            if (s.bi_valid > (16 - len))
+                            {
+                                int val = ltree[code + 256 + 1].fc.code;
+                                s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                                {
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                    }
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                    }
+                                }
+                                s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                                s.bi_valid += len - 16;
+                            }
+                            else
+                            {
+                                s.bi_buf |= (ushort)((ltree[code + 256 + 1].fc.code) << s.bi_valid);
+                                s.bi_valid += len;
+                            }
+                        }
+                        extra = extra_lbits[code];
+                        if (extra != 0)
+                        {
+                            lc -= base_length[code];
+                            {
+                                int len = extra;
+                                if (s.bi_valid > (16 - len))
+                                {
+                                    int val = lc;
+                                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                                    {
+                                        {
+                                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                        }
+                                        {
+                                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                        }
+                                    }
+                                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                                    s.bi_valid += len - 16;
+                                }
+                                else
+                                {
+                                    s.bi_buf |= (ushort)((ushort)lc << s.bi_valid);
+                                    s.bi_valid += len;
+                                }
+                            }
+                        }
+                        dist--;
+                        code = dist < 256 ? _dist_code[dist] : _dist_code[256 + ((dist) >> 7)];
+                        {
+                            int len = dtree[code].dl.len;
+                            if (s.bi_valid > (16 - len))
+                            {
+                                int val = dtree[code].fc.code;
+                                s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                                {
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                    }
+                                    {
+                                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                    }
+                                }
+                                s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                                s.bi_valid += len - 16;
+                            }
+                            else
+                            {
+                                s.bi_buf |= (ushort)((dtree[code].fc.code) << s.bi_valid);
+                                s.bi_valid += len;
+                            }
+                        }
+                        extra = extra_dbits[code];
+                        if (extra != 0)
+                        {
+                            dist -= (uint)base_dist[code];
+                            {
+                                int len = extra;
+                                if (s.bi_valid > (16 - len))
+                                {
+                                    int val = (int)dist;
+                                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                                    {
+                                        {
+                                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                                        }
+                                        {
+                                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                                        }
+                                    }
+                                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                                    s.bi_valid += len - 16;
+                                }
+                                else
+                                {
+                                    s.bi_buf |= (ushort)((ushort)dist << s.bi_valid);
+                                    s.bi_valid += len;
+                                }
+                            }
+                        }
+                    }
+                }
+                while (lx < s.last_lit);
+            {
+                int len = ltree[256].dl.len;
+                if (s.bi_valid > (16 - len))
+                {
+                    int val = ltree[256].fc.code;
+                    s.bi_buf |= (ushort)((ushort)val << s.bi_valid);
+                    {
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                        }
+                        {
+                            s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                        }
+                    }
+                    s.bi_buf = (ushort)((ushort)val >> (16 - s.bi_valid));
+                    s.bi_valid += len - 16;
+                }
+                else
+                {
+                    s.bi_buf |= (ushort)((ltree[256].fc.code) << s.bi_valid);
+                    s.bi_valid += len;
+                }
+            }
 
-		}
+        }
 
-		public static void bi_windup(internal_state s)
-		{
-			if ((s.bi_valid) > (8)) {
-{
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) & 0xff));}
-{
-s.pending_buf[s.pending++] = ((byte)((s.bi_buf) >> 8));}
-}
-}
- else if ((s.bi_valid) > (0)) {
-{
-s.pending_buf[s.pending++] = ((byte)(s.bi_buf));}
-}
+        public static int detect_data_type(internal_state s)
+        {
+            int black_mask = unchecked((int)0xf3ffc07fu);
+            int n = 0;
+            for (n = 0; n <= 31; n++, black_mask >>= 1)
+            { if (((black_mask & 1) != 0) && (s.dyn_ltree[n].fc.freq != 0)) return 0; }
+            if ((s.dyn_ltree[9].fc.freq != 0) || (s.dyn_ltree[10].fc.freq != 0) || (s.dyn_ltree[13].fc.freq != 0))
+                return 1;
+            for (n = 32; n < 256; n++)
+            { if (s.dyn_ltree[n].fc.freq != 0) return 1; }
+            return 0;
+        }
 
-			s.bi_buf = (ushort)(0);
-			s.bi_valid = (int)(0);
-		}
+        public static uint bi_reverse(uint code, int len)
+        {
+            uint res = 0;
+            do
+            {
+                res |= code & 1;
+                code >>= 1;
+                res <<= 1;
+            }
+            while ((--len) > 0);
+            return res >> 1;
+        }
 
-}
+        public static void bi_flush(internal_state s)
+        {
+            if (s.bi_valid == 16)
+            {
+                {
+                    {
+                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                    }
+                    {
+                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                    }
+                }
+                s.bi_buf = 0;
+                s.bi_valid = 0;
+            }
+            else if (s.bi_valid >= 8)
+            {
+                {
+                    s.pending_buf[s.pending++] = (byte)s.bi_buf;
+                }
+                s.bi_buf >>= 8;
+                s.bi_valid -= 8;
+            }
+
+        }
+
+        public static void bi_windup(internal_state s)
+        {
+            if (s.bi_valid > 8)
+            {
+                {
+                    {
+                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) & 0xff);
+                    }
+                    {
+                        s.pending_buf[s.pending++] = (byte)((s.bi_buf) >> 8);
+                    }
+                }
+            }
+            else if (s.bi_valid > 0)
+            {
+                {
+                    s.pending_buf[s.pending++] = (byte)s.bi_buf;
+                }
+            }
+
+            s.bi_buf = 0;
+            s.bi_valid = 0;
+        }
+
+    }
 }

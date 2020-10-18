@@ -155,102 +155,148 @@ namespace ZlibSharp
 			uint len = 0;
 			uint dist = 0;
 			byte* from;
-			state = (inflate_state)(strm.state);
+			state = (inflate_state)strm.state;
 			_in_ = strm.next_in;
 			last = _in_ + (strm.avail_in - 5);
 			_out_ = strm.next_out;
 			beg = _out_ - (start - strm.avail_out);
 			end = _out_ + (strm.avail_out - 257);
-			wsize = (uint)(state->wsize);
-			whave = (uint)(state->whave);
-			wnext = (uint)(state->wnext);
+			wsize = state->wsize;
+			whave = state->whave;
+			wnext = state->wnext;
 			window = state->window;
-			hold = (int)(state->hold);
-			bits = (uint)(state->bits);
+			hold = state->hold;
+			bits = state->bits;
 			lcode = state->lencode;
 			dcode = state->distcode;
 			lmask = (uint)((1U << state->lenbits) - 1);
 			dmask = (uint)((1U << state->distbits) - 1);
 			do {
-if ((bits) < (15)) {
-hold += (int)((int)(*_in_++) << bits);bits += (uint)(8);hold += (int)((int)(*_in_++) << bits);bits += (uint)(8);}
-here = (code)(lcode[hold & lmask]);dolen:;
-op = ((uint)(here.bits));hold >>= op;bits -= (uint)(op);op = ((uint)(here.op));if ((op) == (0)) {
-*_out_++ = ((byte)(here.val));}
+if (bits < 15) {
+hold += (int)(*_in_++ << bits);bits += 8;
+                    hold += (int)(*_in_++ << bits);bits += 8;
+                }
+here = lcode[hold & lmask];
+                dolen:;
+op = here.bits;
+                hold >>= op;bits -= op;
+                op = here.op;
+                if (op == 0) {
+*_out_++ = (byte)here.val;}
  else if ((op & 16) != 0) {
-len = ((uint)(here.val));op &= (uint)(15);if ((op) != 0) {
-if ((bits) < (op)) {
-hold += (int)((int)(*_in_++) << bits);bits += (uint)(8);}
-len += (uint)((uint)(hold) & ((1U << op) - 1));hold >>= op;bits -= (uint)(op);}
-if ((bits) < (15)) {
-hold += (int)((int)(*_in_++) << bits);bits += (uint)(8);hold += (int)((int)(*_in_++) << bits);bits += (uint)(8);}
-here = (code)(dcode[hold & dmask]);dodist:;
-op = ((uint)(here.bits));hold >>= op;bits -= (uint)(op);op = ((uint)(here.op));if ((op & 16) != 0) {
-dist = ((uint)(here.val));op &= (uint)(15);if ((bits) < (op)) {
-hold += (int)((int)(*_in_++) << bits);bits += (uint)(8);if ((bits) < (op)) {
-hold += (int)((int)(*_in_++) << bits);bits += (uint)(8);}
+len = here.val;
+                    op &= 15;
+                    if (op != 0) {
+if (bits < op) {
+hold += (int)(*_in_++ << bits);bits += 8;
+                        }
+len += (uint)((uint)hold & ((1U << op) - 1));hold >>= op;bits -= op;
+                    }
+if (bits < 15) {
+hold += (int)(*_in_++ << bits);bits += 8;
+                        hold += (int)(*_in_++ << bits);bits += 8;
+                    }
+here = dcode[hold & dmask];
+                    dodist:;
+op = here.bits;
+                    hold >>= op;bits -= op;
+                    op = here.op;
+                    if ((op & 16) != 0) {
+dist = here.val;
+                        op &= 15;
+                        if (bits < op) {
+hold += (int)(*_in_++ << bits);bits += 8;
+                            if (bits < op) {
+hold += (int)(*_in_++ << bits);bits += 8;
+                            }
 }
-dist += (uint)((uint)(hold) & ((1U << op) - 1));hold >>= op;bits -= (uint)(op);op = ((uint)(_out_ - beg));if ((dist) > (op)) {
-op = (uint)(dist - op);if ((op) > (whave)) {
-if ((state->sane) != 0) {
-strm.msg = "invalid distance too far back";state->mode = (inflate_mode)(BAD);break;}
+dist += (uint)((uint)hold & ((1U << op) - 1));hold >>= op;bits -= op;
+                        op = (uint)(_out_ - beg);if (dist > op) {
+op = dist - op;
+                            if (op > whave) {
+if (state->sane != 0) {
+strm.msg = "invalid distance too far back";state->mode = (inflate_mode)BAD;break;}
 }
-from = window;if ((wnext) == (0)) {
-from += wsize - op;if ((op) < (len)) {
-len -= (uint)(op);do {
-*_out_++ = (byte)(*from++);}
+from = window;if (wnext == 0) {
+from += wsize - op;if (op < len) {
+len -= op;
+                                    do {
+*_out_++ = *from++;
+                                    }
  while ((--op) != 0);from = _out_ - dist;}
 }
- else if ((wnext) < (op)) {
-from += wsize + wnext - op;op -= (uint)(wnext);if ((op) < (len)) {
-len -= (uint)(op);do {
-*_out_++ = (byte)(*from++);}
- while ((--op) != 0);from = window;if ((wnext) < (len)) {
-op = (uint)(wnext);len -= (uint)(op);do {
-*_out_++ = (byte)(*from++);}
+ else if (wnext < op) {
+from += wsize + wnext - op;op -= wnext;
+                                if (op < len) {
+len -= op;
+                                    do {
+*_out_++ = *from++;
+                                    }
+ while ((--op) != 0);from = window;if (wnext < len) {
+op = wnext;
+                                        len -= op;
+                                        do {
+*_out_++ = *from++;
+                                        }
  while ((--op) != 0);from = _out_ - dist;}
 }
 }
  else {
-from += wnext - op;if ((op) < (len)) {
-len -= (uint)(op);do {
-*_out_++ = (byte)(*from++);}
+from += wnext - op;if (op < len) {
+len -= op;
+                                    do {
+*_out_++ = *from++;
+                                    }
  while ((--op) != 0);from = _out_ - dist;}
 }
-while ((len) > (2)) {
-*_out_++ = (byte)(*from++);*_out_++ = (byte)(*from++);*_out_++ = (byte)(*from++);len -= (uint)(3);}if ((len) != 0) {
-*_out_++ = (byte)(*from++);if ((len) > (1)) *_out_++ = (byte)(*from++);}
+while (len > 2) {
+*_out_++ = *from++;
+                                *_out_++ = *from++;
+                                *_out_++ = *from++;
+                                len -= 3;
+                            }if (len != 0) {
+*_out_++ = *from++;
+                                if (len > 1) *_out_++ = *from++;
+                            }
 }
  else {
 from = _out_ - dist;do {
-*_out_++ = (byte)(*from++);*_out_++ = (byte)(*from++);*_out_++ = (byte)(*from++);len -= (uint)(3);}
- while ((len) > (2));if ((len) != 0) {
-*_out_++ = (byte)(*from++);if ((len) > (1)) *_out_++ = (byte)(*from++);}
+*_out_++ = *from++;
+                                *_out_++ = *from++;
+                                *_out_++ = *from++;
+                                len -= 3;
+                            }
+ while (len > 2);if (len != 0) {
+*_out_++ = *from++;
+                                if (len > 1) *_out_++ = *from++;
+                            }
 }
 }
- else if ((op & 64) == (0)) {
-here = (code)(dcode[here.val + (hold & ((1U << op) - 1))]);goto dodist;}
+ else if ((op & 64) == 0) {
+here = dcode[here.val + (hold & ((1U << op) - 1))];
+                        goto dodist;}
  else {
-strm.msg = "invalid distance code";state->mode = (inflate_mode)(BAD);break;}
+strm.msg = "invalid distance code";state->mode = (inflate_mode)BAD;break;}
 }
- else if ((op & 64) == (0)) {
-here = (code)(lcode[here.val + (hold & ((1U << op) - 1))]);goto dolen;}
+ else if ((op & 64) == 0) {
+here = lcode[here.val + (hold & ((1U << op) - 1))];
+                    goto dolen;}
  else if ((op & 32) != 0) {
-state->mode = (inflate_mode)(TYPE);break;}
+state->mode = (inflate_mode)TYPE;break;}
  else {
-strm.msg = "invalid literal/length code";state->mode = (inflate_mode)(BAD);break;}
+strm.msg = "invalid literal/length code";state->mode = (inflate_mode)BAD;break;}
 }
- while (((_in_) < (last)) && ((_out_) < (end)));
-			len = (uint)(bits >> 3);
+ while ((_in_ < last) && (_out_ < end));
+			len = bits >> 3;
 			_in_ -= len;
-			bits -= (uint)(len << 3);
+			bits -= len << 3;
 			hold &= (int)((1U << bits) - 1);
 			strm.next_in = _in_;
 			strm.next_out = _out_;
-			strm.avail_in = ((uint)((_in_) < (last)?5 + (last - _in_):5 - (_in_ - last)));
-			strm.avail_out = ((uint)((_out_) < (end)?257 + (end - _out_):257 - (_out_ - end)));
-			state->hold = (int)(hold);
-			state->bits = (uint)(bits);
+			strm.avail_in = (uint)(_in_ < last?5 + (last - _in_):5 - (_in_ - last));
+			strm.avail_out = (uint)(_out_ < end?257 + (end - _out_):257 - (_out_ - end));
+			state->hold = hold;
+			state->bits = bits;
 			return;
 		}
 

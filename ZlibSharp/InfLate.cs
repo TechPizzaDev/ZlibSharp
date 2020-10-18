@@ -135,106 +135,113 @@ namespace ZlibSharp
 		public static int inflateStateCheck(z_stream_s strm)
 		{
 			inflate_state state;
-			if ((((strm) == (null)) || (strm.zalloc == ((zalloc_delegate)(0)))) || (strm.zfree == ((zfree_delegate)(0)))) return (int)(1);
-			state = (inflate_state)(strm.state);
-			if (((((state) == (null)) || (state->strm != strm)) || ((state->mode) < (HEAD))) || ((state->mode) > (SYNC))) return (int)(1);
-			return (int)(0);
+			if ((strm == null) || (strm.zalloc == ((zalloc_delegate)0)) || (strm.zfree == ((zfree_delegate)0))) return 1;
+			state = (inflate_state)strm.state;
+			if ((state == null) || (state->strm != strm) || (state->mode < HEAD) || (state->mode > SYNC)) return 1;
+			return 0;
 		}
 
 		public static int inflateResetKeep(z_stream_s strm)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			strm.total_in = (int)(strm.total_out = (int)(state->total = (int)(0)));
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			strm.total_in = strm.total_out = state->total = 0;
 			strm.msg = null;
-			if ((state->wrap) != 0) strm.adler = (int)(state->wrap & 1);
-			state->mode = (inflate_mode)(HEAD);
-			state->last = (int)(0);
-			state->havedict = (int)(0);
-			state->dmax = (uint)(32768U);
+			if (state->wrap != 0) strm.adler = (int)(state->wrap & 1);
+			state->mode = (inflate_mode)HEAD;
+			state->last = 0;
+			state->havedict = 0;
+			state->dmax = 32768U;
 			state->head = null;
-			state->hold = (int)(0);
-			state->bits = (uint)(0);
+			state->hold = 0;
+			state->bits = 0;
 			state->lencode = state->distcode = state->next = state->codes;
-			state->sane = (int)(1);
-			state->back = (int)(-1);
-			return (int)(0);
+			state->sane = 1;
+			state->back = -1;
+			return 0;
 		}
 
 		public static int inflateReset(z_stream_s strm)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			state->wsize = (uint)(0);
-			state->whave = (uint)(0);
-			state->wnext = (uint)(0);
-			return (int)(inflateResetKeep(strm));
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			state->wsize = 0;
+			state->whave = 0;
+			state->wnext = 0;
+			return inflateResetKeep(strm);
 		}
 
 		public static int inflateReset2(z_stream_s strm, int windowBits)
 		{
 			int wrap = 0;
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if ((windowBits) < (0)) {
-wrap = (int)(0);windowBits = (int)(-windowBits);}
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			if (windowBits < 0) {
+wrap = 0;
+                windowBits = -windowBits;
+            }
  else {
-wrap = (int)((windowBits >> 4) + 5);if ((windowBits) < (48)) windowBits &= (int)(15);}
+wrap = (windowBits >> 4) + 5;
+                if (windowBits < 48) windowBits &= 15;
+            }
 
-			if (((windowBits) != 0) && (((windowBits) < (8)) || ((windowBits) > (15)))) return (int)(-2);
-			if ((state->window != null) && (state->wbits != (uint)(windowBits))) {
-strm.zfree(strm.opaque, (void *)(state->window));state->window = null;}
+			if ((windowBits != 0) && ((windowBits < 8) || (windowBits > 15))) return -2;
+			if ((state->window != null) && (state->wbits != (uint)windowBits)) {
+strm.zfree(strm.opaque, state->window);state->window = null;}
 
-			state->wrap = (int)(wrap);
-			state->wbits = ((uint)(windowBits));
-			return (int)(inflateReset(strm));
+			state->wrap = wrap;
+			state->wbits = (uint)windowBits;
+			return inflateReset(strm);
 		}
 
 		public static int inflateInit2_(z_stream_s strm, int windowBits, sbyte* version, int stream_size)
 		{
 			int ret = 0;
 			inflate_state state;
-			if ((((version) == (null)) || (version[0] != "1.2.11"[0])) || (stream_size != (int)(sizeof(z_stream_s)))) return (int)(-6);
-			if ((strm) == (null)) return (int)(-2);
+			if ((version == null) || (version[0] != "1.2.11"[0]) || (stream_size != sizeof(z_stream_s))) return -6;
+			if (strm == null) return -2;
 			strm.msg = null;
-			if (strm.zalloc == ((zalloc_delegate)(0))) {
-strm.zalloc = zcalloc;strm.opaque = (void *)(0);}
+			if (strm.zalloc == ((zalloc_delegate)0)) {
+strm.zalloc = zcalloc;strm.opaque = (void *)0;}
 
-			if (strm.zfree == ((zfree_delegate)(0))) strm.zfree = zcfree;
-			state = (inflate_state)(strm.zalloc(strm.opaque, (uint)(1), (uint)(sizeof(inflate_state))));
-			if ((state) == (null)) return (int)(-4);
-			strm.state = (internal_state)(state);
+			if (strm.zfree == ((zfree_delegate)0)) strm.zfree = zcfree;
+			state = (inflate_state)strm.zalloc(strm.opaque, 1, (uint)sizeof(inflate_state));
+			if (state == null) return -4;
+			strm.state = (internal_state)state;
 			state->strm = strm;
 			state->window = null;
-			state->mode = (inflate_mode)(HEAD);
-			ret = (int)(inflateReset2(strm, (int)(windowBits)));
+			state->mode = (inflate_mode)HEAD;
+			ret = inflateReset2(strm, windowBits);
 			if (ret != 0) {
-strm.zfree(strm.opaque, (void *)(state));strm.state = null;}
+strm.zfree(strm.opaque, (void *)state);strm.state = null;}
 
-			return (int)(ret);
+			return ret;
 		}
 
 		public static int inflateInit_(z_stream_s strm, sbyte* version, int stream_size)
 		{
-			return (int)(inflateInit2_(strm, (int)(15), version, (int)(stream_size)));
+			return inflateInit2_(strm, 15, version, stream_size);
 		}
 
 		public static int inflatePrime(z_stream_s strm, int bits, int value)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if ((bits) < (0)) {
-state->hold = (int)(0);state->bits = (uint)(0);return (int)(0);}
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			if (bits < 0) {
+state->hold = 0;
+                state->bits = 0;
+                return 0;
+            }
 
-			if (((bits) > (16)) || ((state->bits + (uint)(bits)) > (32))) return (int)(-2);
+			if ((bits > 16) || ((state->bits + (uint)bits) > 32)) return -2;
 			value &= (int)((1L << bits) - 1);
-			state->hold += (int)((uint)(value) << state->bits);
-			state->bits += ((uint)(bits));
-			return (int)(0);
+			state->hold += (int)((uint)value << state->bits);
+			state->bits += (uint)bits;
+			return 0;
 		}
 
 		public static void fixedtables(inflate_state state)
@@ -788,32 +795,44 @@ distfix[30] = (code)({ 22, 5, 193 });
 distfix[31] = (code)({ 64, 5, 0 });
 
 			state->lencode = lenfix;
-			state->lenbits = (uint)(9);
+			state->lenbits = 9;
 			state->distcode = distfix;
-			state->distbits = (uint)(5);
+			state->distbits = 5;
 		}
 
 		public static int updatewindow(z_stream_s strm, byte* end, uint copy)
 		{
 			inflate_state state;
 			uint dist = 0;
-			state = (inflate_state)(strm.state);
-			if ((state->window) == (null)) {
-state->window = (byte*)(strm.zalloc(strm.opaque, (uint)(1U << state->wbits), (uint)(sizeof(unsignedchar))));if ((state->window) == (null)) return (int)(1);}
+			state = (inflate_state)strm.state;
+			if (state->window == null) {
+state->window = (byte*)strm.zalloc(strm.opaque, (uint)(1U << state->wbits), (uint)sizeof(unsignedchar));if (state->window == null) return 1;
+            }
 
-			if ((state->wsize) == (0)) {
-state->wsize = (uint)(1U << state->wbits);state->wnext = (uint)(0);state->whave = (uint)(0);}
+			if (state->wsize == 0) {
+state->wsize = (uint)(1U << state->wbits);state->wnext = 0;
+                state->whave = 0;
+            }
 
-			if ((copy) >= (state->wsize)) {
-memcpy(state->window, end - state->wsize, (ulong)(state->wsize));state->wnext = (uint)(0);state->whave = (uint)(state->wsize);}
+			if (copy >= state->wsize) {
+memcpy(state->window, end - state->wsize, (ulong)state->wsize);state->wnext = 0;
+                state->whave = state->wsize;
+            }
  else {
-dist = (uint)(state->wsize - state->wnext);if ((dist) > (copy)) dist = (uint)(copy);memcpy(state->window + state->wnext, end - copy, (ulong)(dist));copy -= (uint)(dist);if ((copy) != 0) {
-memcpy(state->window, end - copy, (ulong)(copy));state->wnext = (uint)(copy);state->whave = (uint)(state->wsize);}
+dist = (uint)(state->wsize - state->wnext);if (dist > copy) dist = copy;
+                memcpy(state->window + state->wnext, end - copy, (ulong)dist);copy -= dist;
+                if (copy != 0) {
+memcpy(state->window, end - copy, (ulong)copy);state->wnext = copy;
+                    state->whave = state->wsize;
+                }
  else {
-state->wnext += (uint)(dist);if ((state->wnext) == (state->wsize)) state->wnext = (uint)(0);if ((state->whave) < (state->wsize)) state->whave += (uint)(dist);}
+state->wnext += dist;
+                    if (state->wnext == state->wsize) state->wnext = 0;
+                    if (state->whave < state->wsize) state->whave += dist;
+                }
 }
 
-			return (int)(0);
+			return 0;
 		}
 
 		public static int inflate(z_stream_s strm, int flush)
@@ -833,361 +852,534 @@ state->wnext += (uint)(dist);if ((state->wnext) == (state->wsize)) state->wnext 
 			int ret = 0;
 			byte* hbuf = stackalloc byte[4];
 			ushort* order = stackalloc ushort[19];
-order[0] = (ushort)(16);
-order[1] = (ushort)(17);
-order[2] = (ushort)(18);
-order[3] = (ushort)(0);
-order[4] = (ushort)(8);
-order[5] = (ushort)(7);
-order[6] = (ushort)(9);
-order[7] = (ushort)(6);
-order[8] = (ushort)(10);
-order[9] = (ushort)(5);
-order[10] = (ushort)(11);
-order[11] = (ushort)(4);
-order[12] = (ushort)(12);
-order[13] = (ushort)(3);
-order[14] = (ushort)(13);
-order[15] = (ushort)(2);
-order[16] = (ushort)(14);
-order[17] = (ushort)(1);
-order[18] = (ushort)(15);
+order[0] = 16;
+order[1] = 17;
+order[2] = 18;
+order[3] = 0;
+order[4] = 8;
+order[5] = 7;
+order[6] = 9;
+order[7] = 6;
+order[8] = 10;
+order[9] = 5;
+order[10] = 11;
+order[11] = 4;
+order[12] = 12;
+order[13] = 3;
+order[14] = 13;
+order[15] = 2;
+order[16] = 14;
+order[17] = 1;
+order[18] = 15;
 
-			if ((((inflateStateCheck(strm)) != 0) || ((strm.next_out) == (null))) || (((strm.next_in) == (null)) && (strm.avail_in != 0))) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if ((state->mode) == (TYPE)) state->mode = (inflate_mode)(TYPEDO);
+			if ((inflateStateCheck(strm) != 0) || (strm.next_out == null) || ((strm.next_in == null) && (strm.avail_in != 0))) return -2;
+			state = (inflate_state)strm.state;
+			if (state->mode == TYPE) state->mode = (inflate_mode)TYPEDO;
 			do {
-put = strm.next_out;left = (uint)(strm.avail_out);next = strm.next_in;have = (uint)(strm.avail_in);hold = (int)(state->hold);bits = (uint)(state->bits);}
- while ((0) != 0);
-			_in_ = (uint)(have);
-			_out_ = (uint)(left);
-			ret = (int)(0);
+put = strm.next_out;left = strm.avail_out;
+                next = strm.next_in;have = strm.avail_in;
+                hold = state->hold;
+                bits = state->bits;
+            }
+ while (0 != 0);
+			_in_ = have;
+			_out_ = left;
+			ret = 0;
 			for (; ; ) {switch (state->mode){
-case HEAD:if ((state->wrap) == (0)) {
-state->mode = (inflate_mode)(TYPEDO);break;}
+case HEAD:if (state->wrap == 0) {
+state->mode = (inflate_mode)TYPEDO;break;}
 do {
-while ((bits) < ((uint)(16))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);if (((state->wrap & 2)!= 0) && ((hold) == (0x8b1f))) {
-if ((state->wbits) == (0)) state->wbits = (uint)(15);state->check = (int)(crc32((int)(0L), null, (uint)(0)));do {
-hbuf[0] = ((byte)(hold));hbuf[1] = ((byte)((hold) >> 8));state->check = (int)(crc32((int)(state->check), hbuf, (uint)(2)));}
- while ((0) != 0);do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);state->mode = (inflate_mode)(FLAGS);break;}
-state->flags = (int)(0);if (state->head != null) state->head->done = (int)(-1);if (((state->wrap & 1)== 0) || (((((uint)(hold) & ((1U << (8)) - 1)) << 8) + (hold >> 8)) % 31)) {
-strm.msg = "incorrect header check";state->mode = (inflate_mode)(BAD);break;}
-if (((uint)(hold) & ((1U << (4)) - 1)) != 8) {
-strm.msg = "unknown compression method";state->mode = (inflate_mode)(BAD);break;}
+while (bits < 16) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}}
+ while (0 != 0);if (((state->wrap & 2)!= 0) && (hold == 0x8b1f)) {
+if (state->wbits == 0) state->wbits = 15;
+                            state->check = (int)crc32((int)0L, null, 0);do {
+hbuf[0] = (byte)hold;hbuf[1] = (byte)((hold) >> 8);state->check = (int)crc32(state->check, hbuf, 2);}
+ while (0 != 0);do {
+hold = 0;
+                                bits = 0;
+                            }
+ while (0 != 0);state->mode = (inflate_mode)FLAGS;break;}
+state->flags = 0;
+                        if (state->head != null) state->head->done = -1;
+                        if (((state->wrap & 1)== 0) || (((((uint)hold & ((1U << (8)) - 1)) << 8) + (hold >> 8)) % 31)) {
+strm.msg = "incorrect header check";state->mode = (inflate_mode)BAD;break;}
+if (((uint)hold & ((1U << (4)) - 1)) != 8) {
+strm.msg = "unknown compression method";state->mode = (inflate_mode)BAD;break;}
 do {
-hold >>= (4);bits -= ((uint)(4));}
- while ((0) != 0);len = (uint)(((uint)(hold) & ((1U << (4)) - 1)) + 8);if ((state->wbits) == (0)) state->wbits = (uint)(len);if (((len) > (15)) || ((len) > (state->wbits))) {
-strm.msg = "invalid window size";state->mode = (inflate_mode)(BAD);break;}
-state->dmax = (uint)(1U << len);strm.adler = (int)(state->check = (int)(adler32((int)(0L), null, (uint)(0))));state->mode = (inflate_mode)((hold & 0x200) != 0?DICTID:TYPE);do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);break;case FLAGS:do {
-while ((bits) < ((uint)(16))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->flags = (int)(hold);if ((state->flags & 0xff) != 8) {
-strm.msg = "unknown compression method";state->mode = (inflate_mode)(BAD);break;}
+hold >>= 4;bits -= 4;
+                        }
+ while (0 != 0);len = ((uint)hold & ((1U << (4)) - 1)) + 8;
+                        if (state->wbits == 0) state->wbits = len;
+                        if ((len > 15) || (len > state->wbits)) {
+strm.msg = "invalid window size";state->mode = (inflate_mode)BAD;break;}
+state->dmax = (uint)(1U << len);strm.adler = state->check = (int)adler32((int)0L, null, 0);
+                        state->mode = (inflate_mode)((hold & 0x200) != 0?DICTID:TYPE);do {
+hold = 0;
+                            bits = 0;
+                        }
+ while (0 != 0);break;case FLAGS:do {
+while (bits < 16) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}}
+ while (0 != 0);state->flags = hold;
+                        if ((state->flags & 0xff) != 8) {
+strm.msg = "unknown compression method";state->mode = (inflate_mode)BAD;break;}
 if ((state->flags & 0xe000) != 0) {
-strm.msg = "unknown header flags set";state->mode = (inflate_mode)(BAD);break;}
-if (state->head != null) state->head->text = (int)((hold >> 8) & 1);if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) do {
-hbuf[0] = ((byte)(hold));hbuf[1] = ((byte)((hold) >> 8));state->check = (int)(crc32((int)(state->check), hbuf, (uint)(2)));}
- while ((0) != 0);do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);state->mode = (inflate_mode)(TIME);case TIME:do {
-while ((bits) < ((uint)(32))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);if (state->head != null) state->head->time = (int)(hold);if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) do {
-hbuf[0] = ((byte)(hold));hbuf[1] = ((byte)((hold) >> 8));hbuf[2] = ((byte)((hold) >> 16));hbuf[3] = ((byte)((hold) >> 24));state->check = (int)(crc32((int)(state->check), hbuf, (uint)(4)));}
- while ((0) != 0);do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);state->mode = (inflate_mode)(OS);case OS:do {
-while ((bits) < ((uint)(16))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);if (state->head != null) {
-state->head->xflags = (int)(hold & 0xff);state->head->os = (int)(hold >> 8);}
+strm.msg = "unknown header flags set";state->mode = (inflate_mode)BAD;break;}
+if (state->head != null) state->head->text = (hold >> 8) & 1;
+                        if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) do {
+hbuf[0] = (byte)hold;hbuf[1] = (byte)((hold) >> 8);state->check = (int)crc32(state->check, hbuf, 2);}
+ while (0 != 0);do {
+hold = 0;
+                            bits = 0;
+                        }
+ while (0 != 0);state->mode = (inflate_mode)TIME;case TIME:do {
+while (bits < 32) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}}
+ while (0 != 0);if (state->head != null) state->head->time = hold;
+                        if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) do {
+hbuf[0] = (byte)hold;hbuf[1] = (byte)((hold) >> 8);hbuf[2] = (byte)((hold) >> 16);hbuf[3] = (byte)((hold) >> 24);state->check = (int)crc32(state->check, hbuf, 4);}
+ while (0 != 0);do {
+hold = 0;
+                            bits = 0;
+                        }
+ while (0 != 0);state->mode = (inflate_mode)OS;case OS:do {
+while (bits < 16) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}}
+ while (0 != 0);if (state->head != null) {
+state->head->xflags = hold & 0xff;
+                            state->head->os = hold >> 8;
+                        }
 if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) do {
-hbuf[0] = ((byte)(hold));hbuf[1] = ((byte)((hold) >> 8));state->check = (int)(crc32((int)(state->check), hbuf, (uint)(2)));}
- while ((0) != 0);do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);state->mode = (inflate_mode)(EXLEN);case EXLEN:if ((state->flags & 0x0400) != 0) {
+hbuf[0] = (byte)hold;hbuf[1] = (byte)((hold) >> 8);state->check = (int)crc32(state->check, hbuf, 2);}
+ while (0 != 0);do {
+hold = 0;
+                            bits = 0;
+                        }
+ while (0 != 0);state->mode = (inflate_mode)EXLEN;case EXLEN:if ((state->flags & 0x0400) != 0) {
 do {
-while ((bits) < ((uint)(16))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->length = ((uint)(hold));if (state->head != null) state->head->extra_len = ((uint)(hold));if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) do {
-hbuf[0] = ((byte)(hold));hbuf[1] = ((byte)((hold) >> 8));state->check = (int)(crc32((int)(state->check), hbuf, (uint)(2)));}
- while ((0) != 0);do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);}
- else if (state->head != null) state->head->extra = null;state->mode = (inflate_mode)(EXTRA);case EXTRA:if ((state->flags & 0x0400) != 0) {
-copy = (uint)(state->length);if ((copy) > (have)) copy = (uint)(have);if ((copy) != 0) {
+while (bits < 16) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                    }
+ while (0 != 0);}}
+ while (0 != 0);state->length = (uint)hold;if (state->head != null) state->head->extra_len = (uint)hold;if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) do {
+hbuf[0] = (byte)hold;hbuf[1] = (byte)((hold) >> 8);state->check = (int)crc32(state->check, hbuf, 2);}
+ while (0 != 0);do {
+hold = 0;
+                                bits = 0;
+                            }
+ while (0 != 0);}
+ else if (state->head != null) state->head->extra = null;state->mode = (inflate_mode)EXTRA;case EXTRA:if ((state->flags & 0x0400) != 0) {
+copy = state->length;
+                            if (copy > have) copy = have;
+                            if (copy != 0) {
 if ((state->head != null) && (state->head->extra != null)) {
-len = (uint)(state->head->extra_len - state->length);memcpy(state->head->extra + len, next, (ulong)((len + copy) > (state->head->extra_max)?state->head->extra_max - len:copy));}
-if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) state->check = (int)(crc32((int)(state->check), next, (uint)(copy)));have -= (uint)(copy);next += copy;state->length -= (uint)(copy);}
-if ((state->length) != 0) goto inf_leave;}
-state->length = (uint)(0);state->mode = (inflate_mode)(NAME);case NAME:if ((state->flags & 0x0800) != 0) {
-if ((have) == (0)) goto inf_leave;copy = (uint)(0);do {
-len = ((uint)(next[copy++]));if (((state->head != null) && (state->head->name != null)) && ((state->length) < (state->head->name_max))) state->head->name[state->length++] = ((byte)(len));}
- while (((len) != 0) && ((copy) < (have)));if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) state->check = (int)(crc32((int)(state->check), next, (uint)(copy)));have -= (uint)(copy);next += copy;if ((len) != 0) goto inf_leave;}
- else if (state->head != null) state->head->name = null;state->length = (uint)(0);state->mode = (inflate_mode)(COMMENT);case COMMENT:if ((state->flags & 0x1000) != 0) {
-if ((have) == (0)) goto inf_leave;copy = (uint)(0);do {
-len = ((uint)(next[copy++]));if (((state->head != null) && (state->head->comment != null)) && ((state->length) < (state->head->comm_max))) state->head->comment[state->length++] = ((byte)(len));}
- while (((len) != 0) && ((copy) < (have)));if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) state->check = (int)(crc32((int)(state->check), next, (uint)(copy)));have -= (uint)(copy);next += copy;if ((len) != 0) goto inf_leave;}
- else if (state->head != null) state->head->comment = null;state->mode = (inflate_mode)(HCRC);case HCRC:if ((state->flags & 0x0200) != 0) {
+len = (uint)(state->head->extra_len - state->length);memcpy(state->head->extra + len, next, (ulong)((len + copy) > state->head->extra_max?state->head->extra_max - len:copy));}
+if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) state->check = (int)crc32(state->check, next, copy);have -= copy;
+                                next += copy;state->length -= copy;
+                            }
+if (state->length != 0) goto inf_leave;}
+state->length = 0;
+                        state->mode = (inflate_mode)NAME;case NAME:if ((state->flags & 0x0800) != 0) {
+if (have == 0) goto inf_leave;copy = 0;
+                            do {
+len = next[copy++];
+                                if ((state->head != null) && (state->head->name != null) && (state->length < state->head->name_max)) state->head->name[state->length++] = (byte)len;}
+ while ((len != 0) && (copy < have));if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) state->check = (int)crc32(state->check, next, copy);have -= copy;
+                            next += copy;if (len != 0) goto inf_leave;}
+ else if (state->head != null) state->head->name = null;state->length = 0;
+                        state->mode = (inflate_mode)COMMENT;case COMMENT:if ((state->flags & 0x1000) != 0) {
+if (have == 0) goto inf_leave;copy = 0;
+                            do {
+len = next[copy++];
+                                if ((state->head != null) && (state->head->comment != null) && (state->length < state->head->comm_max)) state->head->comment[state->length++] = (byte)len;}
+ while ((len != 0) && (copy < have));if (((state->flags & 0x0200)!= 0) && ((state->wrap & 4)!= 0)) state->check = (int)crc32(state->check, next, copy);have -= copy;
+                            next += copy;if (len != 0) goto inf_leave;}
+ else if (state->head != null) state->head->comment = null;state->mode = (inflate_mode)HCRC;case HCRC:if ((state->flags & 0x0200) != 0) {
 do {
-while ((bits) < ((uint)(16))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);if (((state->wrap & 4)!= 0) && (hold != (state->check & 0xffff))) {
-strm.msg = "header crc mismatch";state->mode = (inflate_mode)(BAD);break;}
+while (bits < 16) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                    }
+ while (0 != 0);}}
+ while (0 != 0);if (((state->wrap & 4)!= 0) && (hold != (state->check & 0xffff))) {
+strm.msg = "header crc mismatch";state->mode = (inflate_mode)BAD;break;}
 do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);}
+hold = 0;
+                                bits = 0;
+                            }
+ while (0 != 0);}
 if (state->head != null) {
-state->head->hcrc = (int)((state->flags >> 9) & 1);state->head->done = (int)(1);}
-strm.adler = (int)(state->check = (int)(crc32((int)(0L), null, (uint)(0))));state->mode = (inflate_mode)(TYPE);break;case DICTID:do {
-while ((bits) < ((uint)(32))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);strm.adler = (int)(state->check = (int)((((hold) >> 24) & 255) + (((hold) >> 8) & 65280) + (((hold) & 65280) << 8) + (((hold) & 255) << 24)));do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);state->mode = (inflate_mode)(DICT);case DICT:if ((state->havedict) == (0)) {
+state->head->hcrc = (int)((state->flags >> 9) & 1);state->head->done = 1;
+                        }
+strm.adler = state->check = (int)crc32((int)0L, null, 0);
+                        state->mode = (inflate_mode)TYPE;break;case DICTID:do {
+while (bits < 32) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}}
+ while (0 != 0);strm.adler = state->check = (((hold) >> 24) & 255) + (((hold) >> 8) & 65280) + (((hold) & 65280) << 8) + (((hold) & 255) << 24);
+                        do {
+hold = 0;
+                            bits = 0;
+                        }
+ while (0 != 0);state->mode = (inflate_mode)DICT;case DICT:if (state->havedict == 0) {
 do {
-strm.next_out = put;strm.avail_out = (uint)(left);strm.next_in = next;strm.avail_in = (uint)(have);state->hold = (int)(hold);state->bits = (uint)(bits);}
- while ((0) != 0);return (int)(2);}
-strm.adler = (int)(state->check = (int)(adler32((int)(0L), null, (uint)(0))));state->mode = (inflate_mode)(TYPE);case TYPE:if (((flush) == (5)) || ((flush) == (6))) goto inf_leave;case TYPEDO:if ((state->last) != 0) {
+strm.next_out = put;strm.avail_out = left;
+                                strm.next_in = next;strm.avail_in = have;
+                                state->hold = hold;
+                                state->bits = bits;
+                            }
+ while (0 != 0);return 2;
+                        }
+strm.adler = state->check = (int)adler32((int)0L, null, 0);
+                        state->mode = (inflate_mode)TYPE;case TYPE:if ((flush == 5) || (flush == 6)) goto inf_leave;case TYPEDO:if (state->last != 0) {
 do {
-hold >>= bits & 7;bits -= (uint)(bits & 7);}
- while ((0) != 0);state->mode = (inflate_mode)(CHECK);break;}
+hold >>= bits & 7;bits -= bits & 7;
+                            }
+ while (0 != 0);state->mode = (inflate_mode)CHECK;break;}
 do {
-while ((bits) < ((uint)(3))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->last = (int)((uint)(hold) & ((1U << (1)) - 1));do {
-hold >>= (1);bits -= ((uint)(1));}
- while ((0) != 0);switch (((uint)(hold) & ((1U << (2)) - 1))){
-case 0:;state->mode = (inflate_mode)(STORED);break;case 1:fixedtables(state);state->mode = (inflate_mode)(LEN_);if ((flush) == (6)) {
+while (bits < 3) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}}
+ while (0 != 0);state->last = (int)((uint)hold & ((1U << (1)) - 1));do {
+hold >>= 1;bits -= 1;
+                        }
+ while (0 != 0);switch ((uint)hold & ((1U << (2)) - 1)){
+case 0:;state->mode = (inflate_mode)STORED;break;case 1:fixedtables(state);state->mode = (inflate_mode)LEN_;if (flush == 6) {
 do {
-hold >>= (2);bits -= ((uint)(2));}
- while ((0) != 0);goto inf_leave;}
-break;case 2:;state->mode = (inflate_mode)(TABLE);break;case 3:strm.msg = "invalid block type";state->mode = (inflate_mode)(BAD);}
+hold >>= 2;bits -= 2;
+                                    }
+ while (0 != 0);goto inf_leave;}
+break;case 2:;state->mode = (inflate_mode)TABLE;break;case 3:strm.msg = "invalid block type";state->mode = (inflate_mode)BAD;}
 do {
-hold >>= (2);bits -= ((uint)(2));}
- while ((0) != 0);break;case STORED:do {
-hold >>= bits & 7;bits -= (uint)(bits & 7);}
- while ((0) != 0);do {
-while ((bits) < ((uint)(32))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);if ((hold & 0xffff) != ((hold >> 16) ^ 0xffff)) {
-strm.msg = "invalid stored block lengths";state->mode = (inflate_mode)(BAD);break;}
-state->length = (uint)((uint)(hold) & 0xffff);do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);state->mode = (inflate_mode)(COPY_);if ((flush) == (6)) goto inf_leave;case COPY_:state->mode = (inflate_mode)(COPY);case COPY:copy = (uint)(state->length);if ((copy) != 0) {
-if ((copy) > (have)) copy = (uint)(have);if ((copy) > (left)) copy = (uint)(left);if ((copy) == (0)) goto inf_leave;memcpy(put, next, (ulong)(copy));have -= (uint)(copy);next += copy;left -= (uint)(copy);put += copy;state->length -= (uint)(copy);break;}
-state->mode = (inflate_mode)(TYPE);break;case TABLE:do {
-while ((bits) < ((uint)(14))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->nlen = (uint)(((uint)(hold) & ((1U << (5)) - 1)) + 257);do {
-hold >>= (5);bits -= ((uint)(5));}
- while ((0) != 0);state->ndist = (uint)(((uint)(hold) & ((1U << (5)) - 1)) + 1);do {
-hold >>= (5);bits -= ((uint)(5));}
- while ((0) != 0);state->ncode = (uint)(((uint)(hold) & ((1U << (4)) - 1)) + 4);do {
-hold >>= (4);bits -= ((uint)(4));}
- while ((0) != 0);if (((state->nlen) > (286)) || ((state->ndist) > (30))) {
-strm.msg = "too many length or distance symbols";state->mode = (inflate_mode)(BAD);break;}
-state->have = (uint)(0);state->mode = (inflate_mode)(LENLENS);case LENLENS:while ((state->have) < (state->ncode)) {
+hold >>= 2;bits -= 2;
+                        }
+ while (0 != 0);break;case STORED:do {
+hold >>= bits & 7;bits -= bits & 7;
+                        }
+ while (0 != 0);do {
+while (bits < 32) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}}
+ while (0 != 0);if ((hold & 0xffff) != ((hold >> 16) ^ 0xffff)) {
+strm.msg = "invalid stored block lengths";state->mode = (inflate_mode)BAD;break;}
+state->length = (uint)hold & 0xffff;
+                        do {
+hold = 0;
+                            bits = 0;
+                        }
+ while (0 != 0);state->mode = (inflate_mode)COPY_;if (flush == 6) goto inf_leave;case COPY_:state->mode = (inflate_mode)COPY;case COPY:copy = state->length;
+                        if (copy != 0) {
+if (copy > have) copy = have;
+                            if (copy > left) copy = left;
+                            if (copy == 0) goto inf_leave;memcpy(put, next, (ulong)copy);have -= copy;
+                            next += copy;left -= copy;
+                            put += copy;state->length -= copy;
+                            break;}
+state->mode = (inflate_mode)TYPE;break;case TABLE:do {
+while (bits < 14) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}}
+ while (0 != 0);state->nlen = ((uint)hold & ((1U << (5)) - 1)) + 257;
+                        do {
+hold >>= 5;bits -= 5;
+                        }
+ while (0 != 0);state->ndist = ((uint)hold & ((1U << (5)) - 1)) + 1;
+                        do {
+hold >>= 5;bits -= 5;
+                        }
+ while (0 != 0);state->ncode = ((uint)hold & ((1U << (4)) - 1)) + 4;
+                        do {
+hold >>= 4;bits -= 4;
+                        }
+ while (0 != 0);if ((state->nlen > 286) || (state->ndist > 30)) {
+strm.msg = "too many length or distance symbols";state->mode = (inflate_mode)BAD;break;}
+state->have = 0;
+                        state->mode = (inflate_mode)LENLENS;case LENLENS:while (state->have < state->ncode) {
 do {
-while ((bits) < ((uint)(3))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->lens[order[state->have++]] = ((ushort)((uint)(hold) & ((1U << (3)) - 1)));do {
-hold >>= (3);bits -= ((uint)(3));}
- while ((0) != 0);}while ((state->have) < (19)) {state->lens[order[state->have++]] = (ushort)(0);}state->next = state->codes;state->lencode = (state->next);state->lenbits = (uint)(7);ret = (int)(inflate_table((codetype)(CODES), state->lens, (uint)(19), &(state->next), &(state->lenbits), state->work));if ((ret) != 0) {
-strm.msg = "invalid code lengths set";state->mode = (inflate_mode)(BAD);break;}
-state->have = (uint)(0);state->mode = (inflate_mode)(CODELENS);case CODELENS:while ((state->have) < (state->nlen + state->ndist)) {
+while (bits < 3) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                    }
+ while (0 != 0);}}
+ while (0 != 0);state->lens[order[state->have++]] = (ushort)((uint)hold & ((1U << (3)) - 1));do {
+hold >>= 3;bits -= 3;
+                            }
+ while (0 != 0);}while (state->have < 19) {state->lens[order[state->have++]] = 0; }state->next = state->codes;state->lencode = state->next;state->lenbits = 7;
+                        ret = (int)inflate_table((codetype)CODES, state->lens, 19, &state->next, &state->lenbits, state->work);if (ret != 0) {
+strm.msg = "invalid code lengths set";state->mode = (inflate_mode)BAD;break;}
+state->have = 0;
+                        state->mode = (inflate_mode)CODELENS;case CODELENS:while (state->have < (state->nlen + state->ndist)) {
 for (; ; ) {
-here = (code)(state->lencode[((uint)(hold) & ((1U << (state->lenbits)) - 1))]);if ((uint)(here.bits) <= bits) break;do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}if ((here.val) < (16)) {
+here = state->lencode[(uint)hold & ((1U << (state->lenbits)) - 1)];
+                                if (here.bits <= bits) break;do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}if (here.val < 16) {
 do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);state->lens[state->have++] = (ushort)(here.val);}
+hold >>= here.bits;bits -= here.bits;
+                                }
+ while (0 != 0);state->lens[state->have++] = here.val;
+                            }
  else {
-if ((here.val) == (16)) {
+if (here.val == 16) {
 do {
-while ((bits) < ((uint)(here.bits + 2))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);if ((state->have) == (0)) {
-strm.msg = "invalid bit length repeat";state->mode = (inflate_mode)(BAD);break;}
-len = (uint)(state->lens[state->have - 1]);copy = (uint)(3 + ((uint)(hold) & ((1U << (2)) - 1)));do {
-hold >>= (2);bits -= ((uint)(2));}
- while ((0) != 0);}
- else if ((here.val) == (17)) {
+while (bits < ((uint)(here.bits + 2))) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                            }
+ while (0 != 0);}}
+ while (0 != 0);do {
+hold >>= here.bits;bits -= here.bits;
+                                    }
+ while (0 != 0);if (state->have == 0) {
+strm.msg = "invalid bit length repeat";state->mode = (inflate_mode)BAD;break;}
+len = state->lens[state->have - 1];
+                                    copy = 3 + ((uint)hold & ((1U << (2)) - 1));
+                                    do {
+hold >>= 2;bits -= 2;
+                                    }
+ while (0 != 0);}
+ else if (here.val == 17) {
 do {
-while ((bits) < ((uint)(here.bits + 3))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);len = (uint)(0);copy = (uint)(3 + ((uint)(hold) & ((1U << (3)) - 1)));do {
-hold >>= (3);bits -= ((uint)(3));}
- while ((0) != 0);}
+while (bits < ((uint)(here.bits + 3))) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                            }
+ while (0 != 0);}}
+ while (0 != 0);do {
+hold >>= here.bits;bits -= here.bits;
+                                    }
+ while (0 != 0);len = 0;
+                                    copy = 3 + ((uint)hold & ((1U << (3)) - 1));
+                                    do {
+hold >>= 3;bits -= 3;
+                                    }
+ while (0 != 0);}
  else {
 do {
-while ((bits) < ((uint)(here.bits + 7))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);len = (uint)(0);copy = (uint)(11 + ((uint)(hold) & ((1U << (7)) - 1)));do {
-hold >>= (7);bits -= ((uint)(7));}
- while ((0) != 0);}
+while (bits < ((uint)(here.bits + 7))) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                            }
+ while (0 != 0);}}
+ while (0 != 0);do {
+hold >>= here.bits;bits -= here.bits;
+                                    }
+ while (0 != 0);len = 0;
+                                    copy = 11 + ((uint)hold & ((1U << (7)) - 1));
+                                    do {
+hold >>= 7;bits -= 7;
+                                    }
+ while (0 != 0);}
 if ((state->have + copy) > (state->nlen + state->ndist)) {
-strm.msg = "invalid bit length repeat";state->mode = (inflate_mode)(BAD);break;}
-while ((copy--) != 0) {state->lens[state->have++] = ((ushort)(len));}}
-}if ((state->mode) == (BAD)) break;if ((state->lens[256]) == (0)) {
-strm.msg = "invalid code -- missing end-of-block";state->mode = (inflate_mode)(BAD);break;}
-state->next = state->codes;state->lencode = (state->next);state->lenbits = (uint)(9);ret = (int)(inflate_table((codetype)(LENS), state->lens, (uint)(state->nlen), &(state->next), &(state->lenbits), state->work));if ((ret) != 0) {
-strm.msg = "invalid literal/lengths set";state->mode = (inflate_mode)(BAD);break;}
-state->distcode = (state->next);state->distbits = (uint)(6);ret = (int)(inflate_table((codetype)(DISTS), state->lens + state->nlen, (uint)(state->ndist), &(state->next), &(state->distbits), state->work));if ((ret) != 0) {
-strm.msg = "invalid distances set";state->mode = (inflate_mode)(BAD);break;}
-state->mode = (inflate_mode)(LEN_);if ((flush) == (6)) goto inf_leave;case LEN_:state->mode = (inflate_mode)(LEN);case LEN:if (((have) >= (6)) && ((left) >= (258))) {
+strm.msg = "invalid bit length repeat";state->mode = (inflate_mode)BAD;break;}
+while (copy-- != 0) {state->lens[state->have++] = (ushort)len;}}
+}if (state->mode == BAD) break;if (state->lens[256] == 0) {
+strm.msg = "invalid code -- missing end-of-block";state->mode = (inflate_mode)BAD;break;}
+state->next = state->codes;state->lencode = state->next;state->lenbits = 9;
+                        ret = (int)inflate_table((codetype)LENS, state->lens, state->nlen, &state->next, &state->lenbits, state->work);if (ret != 0) {
+strm.msg = "invalid literal/lengths set";state->mode = (inflate_mode)BAD;break;}
+state->distcode = state->next;state->distbits = 6;
+                        ret = (int)inflate_table((codetype)DISTS, state->lens + state->nlen, state->ndist, &state->next, &state->distbits, state->work);if (ret != 0) {
+strm.msg = "invalid distances set";state->mode = (inflate_mode)BAD;break;}
+state->mode = (inflate_mode)LEN_;if (flush == 6) goto inf_leave;case LEN_:state->mode = (inflate_mode)LEN;case LEN:if ((have >= 6) && (left >= 258)) {
 do {
-strm.next_out = put;strm.avail_out = (uint)(left);strm.next_in = next;strm.avail_in = (uint)(have);state->hold = (int)(hold);state->bits = (uint)(bits);}
- while ((0) != 0);inflate_fast(strm, (uint)(_out_));do {
-put = strm.next_out;left = (uint)(strm.avail_out);next = strm.next_in;have = (uint)(strm.avail_in);hold = (int)(state->hold);bits = (uint)(state->bits);}
- while ((0) != 0);if ((state->mode) == (TYPE)) state->back = (int)(-1);break;}
-state->back = (int)(0);for (; ; ) {
-here = (code)(state->lencode[((uint)(hold) & ((1U << (state->lenbits)) - 1))]);if ((uint)(here.bits) <= bits) break;do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}if (((here.op) != 0) && ((here.op & 0xf0) == (0))) {
-last = (code)(here);for (; ; ) {
-here = (code)(state->lencode[last.val + (((uint)(hold) & ((1U << (last.bits + last.op)) - 1)) >> last.bits)]);if ((uint)(last.bits + here.bits) <= bits) break;do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}do {
-hold >>= (last.bits);bits -= ((uint)(last.bits));}
- while ((0) != 0);state->back += (int)(last.bits);}
+strm.next_out = put;strm.avail_out = left;
+                                strm.next_in = next;strm.avail_in = have;
+                                state->hold = hold;
+                                state->bits = bits;
+                            }
+ while (0 != 0);inflate_fast(strm, _out_);do {
+put = strm.next_out;left = strm.avail_out;
+                                next = strm.next_in;have = strm.avail_in;
+                                hold = state->hold;
+                                bits = state->bits;
+                            }
+ while (0 != 0);if (state->mode == TYPE) state->back = -1;
+                            break;}
+state->back = 0;
+                        for (; ; ) {
+here = state->lencode[(uint)hold & ((1U << (state->lenbits)) - 1)];
+                            if (here.bits <= bits) break;do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                            }
+ while (0 != 0);}if ((here.op != 0) && ((here.op & 0xf0) == 0)) {
+last = here;
+                            for (; ; ) {
+here = state->lencode[last.val + (((uint)hold & ((1U << (last.bits + last.op)) - 1)) >> last.bits)];
+                                if ((uint)(last.bits + here.bits) <= bits) break;do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}do {
+hold >>= last.bits;bits -= last.bits;
+                            }
+ while (0 != 0);state->back += last.bits;
+                        }
 do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);state->back += (int)(here.bits);state->length = ((uint)(here.val));if (((int)(here.op)) == (0)) {
-state->mode = (inflate_mode)(LIT);break;}
+hold >>= here.bits;bits -= here.bits;
+                        }
+ while (0 != 0);state->back += here.bits;
+                        state->length = here.val;
+                        if (here.op == 0) {
+state->mode = (inflate_mode)LIT;break;}
 if ((here.op & 32) != 0) {
-state->back = (int)(-1);state->mode = (inflate_mode)(TYPE);break;}
+state->back = -1;
+                            state->mode = (inflate_mode)TYPE;break;}
 if ((here.op & 64) != 0) {
-strm.msg = "invalid literal/length code";state->mode = (inflate_mode)(BAD);break;}
-state->extra = (uint)((uint)(here.op) & 15);state->mode = (inflate_mode)(LENEXT);case LENEXT:if ((state->extra) != 0) {
+strm.msg = "invalid literal/length code";state->mode = (inflate_mode)BAD;break;}
+state->extra = (uint)here.op & 15;
+                        state->mode = (inflate_mode)LENEXT;case LENEXT:if (state->extra != 0) {
 do {
-while ((bits) < (state->extra)) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->length += (uint)((uint)(hold) & ((1U << (state->extra)) - 1));do {
-hold >>= (state->extra);bits -= (uint)(state->extra);}
- while ((0) != 0);state->back += (int)(state->extra);}
-state->was = (uint)(state->length);state->mode = (inflate_mode)(DIST);case DIST:for (; ; ) {
-here = (code)(state->distcode[((uint)(hold) & ((1U << (state->distbits)) - 1))]);if ((uint)(here.bits) <= bits) break;do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}if ((here.op & 0xf0) == (0)) {
-last = (code)(here);for (; ; ) {
-here = (code)(state->distcode[last.val + (((uint)(hold) & ((1U << (last.bits + last.op)) - 1)) >> last.bits)]);if ((uint)(last.bits + here.bits) <= bits) break;do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}do {
-hold >>= (last.bits);bits -= ((uint)(last.bits));}
- while ((0) != 0);state->back += (int)(last.bits);}
+while (bits < state->extra) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                    }
+ while (0 != 0);}}
+ while (0 != 0);state->length += (uint)((uint)hold & ((1U << (state->extra)) - 1));do {
+hold >>= state->extra;bits -= state->extra;
+                            }
+ while (0 != 0);state->back += (int)state->extra;}
+state->was = state->length;
+                        state->mode = (inflate_mode)DIST;case DIST:for (; ; ) {
+here = state->distcode[(uint)hold & ((1U << (state->distbits)) - 1)];
+                            if (here.bits <= bits) break;do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                            }
+ while (0 != 0);}if ((here.op & 0xf0) == 0) {
+last = here;
+                            for (; ; ) {
+here = state->distcode[last.val + (((uint)hold & ((1U << (last.bits + last.op)) - 1)) >> last.bits)];
+                                if ((uint)(last.bits + here.bits) <= bits) break;do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                }
+ while (0 != 0);}do {
+hold >>= last.bits;bits -= last.bits;
+                            }
+ while (0 != 0);state->back += last.bits;
+                        }
 do {
-hold >>= (here.bits);bits -= ((uint)(here.bits));}
- while ((0) != 0);state->back += (int)(here.bits);if ((here.op & 64) != 0) {
-strm.msg = "invalid distance code";state->mode = (inflate_mode)(BAD);break;}
-state->offset = ((uint)(here.val));state->extra = (uint)((uint)(here.op) & 15);state->mode = (inflate_mode)(DISTEXT);case DISTEXT:if ((state->extra) != 0) {
+hold >>= here.bits;bits -= here.bits;
+                        }
+ while (0 != 0);state->back += here.bits;
+                        if ((here.op & 64) != 0) {
+strm.msg = "invalid distance code";state->mode = (inflate_mode)BAD;break;}
+state->offset = here.val;
+                        state->extra = (uint)here.op & 15;
+                        state->mode = (inflate_mode)DISTEXT;case DISTEXT:if (state->extra != 0) {
 do {
-while ((bits) < (state->extra)) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);state->offset += (uint)((uint)(hold) & ((1U << (state->extra)) - 1));do {
-hold >>= (state->extra);bits -= (uint)(state->extra);}
- while ((0) != 0);state->back += (int)(state->extra);}
-state->mode = (inflate_mode)(MATCH);case MATCH:if ((left) == (0)) goto inf_leave;copy = (uint)(_out_ - left);if ((state->offset) > (copy)) {
-copy = (uint)(state->offset - copy);if ((copy) > (state->whave)) {
-if ((state->sane) != 0) {
-strm.msg = "invalid distance too far back";state->mode = (inflate_mode)(BAD);break;}
+while (bits < state->extra) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                    }
+ while (0 != 0);}}
+ while (0 != 0);state->offset += (uint)((uint)hold & ((1U << (state->extra)) - 1));do {
+hold >>= state->extra;bits -= state->extra;
+                            }
+ while (0 != 0);state->back += (int)state->extra;}
+state->mode = (inflate_mode)MATCH;case MATCH:if (left == 0) goto inf_leave;copy = _out_ - left;
+                        if (state->offset > copy) {
+copy = (uint)(state->offset - copy);if (copy > state->whave) {
+if (state->sane != 0) {
+strm.msg = "invalid distance too far back";state->mode = (inflate_mode)BAD;break;}
 }
-if ((copy) > (state->wnext)) {
-copy -= (uint)(state->wnext);from = state->window + (state->wsize - copy);}
- else from = state->window + (state->wnext - copy);if ((copy) > (state->length)) copy = (uint)(state->length);}
+if (copy > state->wnext) {
+copy -= state->wnext;
+                                from = state->window + (state->wsize - copy);}
+ else from = state->window + (state->wnext - copy);if (copy > state->length) copy = state->length;
+                        }
  else {
-from = put - state->offset;copy = (uint)(state->length);}
-if ((copy) > (left)) copy = (uint)(left);left -= (uint)(copy);state->length -= (uint)(copy);do {
-*put++ = (byte)(*from++);}
- while ((--copy) != 0);if ((state->length) == (0)) state->mode = (inflate_mode)(LEN);break;case LIT:if ((left) == (0)) goto inf_leave;*put++ = ((byte)(state->length));left--;state->mode = (inflate_mode)(LEN);break;case CHECK:if ((state->wrap) != 0) {
+from = put - state->offset;copy = state->length;
+                        }
+if (copy > left) copy = left;
+                        left -= copy;
+                        state->length -= copy;
+                        do {
+*put++ = *from++;
+                        }
+ while ((--copy) != 0);if (state->length == 0) state->mode = (inflate_mode)LEN;break;case LIT:if (left == 0) goto inf_leave;*put++ = (byte)state->length;left--;state->mode = (inflate_mode)LEN;break;case CHECK:if (state->wrap != 0) {
 do {
-while ((bits) < ((uint)(32))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);_out_ -= (uint)(left);strm.total_out += (int)(_out_);state->total += (int)(_out_);if (((state->wrap & 4)!= 0) && ((_out_) != 0)) strm.adler = (int)(state->check = (int)((state->flags) != 0?crc32((int)(state->check), put - _out_, (uint)(_out_)):adler32((int)(state->check), put - _out_, (uint)(_out_))));_out_ = (uint)(left);if (((state->wrap & 4)!= 0) && (((state->flags) != 0?hold:((((hold) >> 24) & 255) + (((hold) >> 8) & 65280) + (((hold) & 65280) << 8) + (((hold) & 255) << 24))) != state->check)) {
-strm.msg = "incorrect data check";state->mode = (inflate_mode)(BAD);break;}
+while (bits < 32) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                    }
+ while (0 != 0);}}
+ while (0 != 0);_out_ -= left;
+                            strm.total_out += (int)_out_;state->total += (int)_out_;if (((state->wrap & 4)!= 0) && (_out_ != 0)) strm.adler = state->check = (int)(state->flags != 0 ? crc32(state->check, put - _out_, _out_) : adler32(state->check, put - _out_, _out_));
+                            _out_ = left;
+                            if (((state->wrap & 4)!= 0) && ((state->flags != 0?hold:((((hold) >> 24) & 255) + (((hold) >> 8) & 65280) + (((hold) & 65280) << 8) + (((hold) & 255) << 24))) != state->check)) {
+strm.msg = "incorrect data check";state->mode = (inflate_mode)BAD;break;}
 do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);}
-state->mode = (inflate_mode)(LENGTH);case LENGTH:if (((state->wrap) != 0) && ((state->flags) != 0)) {
+hold = 0;
+                                bits = 0;
+                            }
+ while (0 != 0);}
+state->mode = (inflate_mode)LENGTH;case LENGTH:if ((state->wrap != 0) && (state->flags != 0)) {
 do {
-while ((bits) < ((uint)(32))) {do {
-if ((have) == (0)) goto inf_leave;have--;hold += (int)((int)(*next++) << bits);bits += (uint)(8);}
- while ((0) != 0);}}
- while ((0) != 0);if (hold != (state->total & 0xffffffffUL)) {
-strm.msg = "incorrect length check";state->mode = (inflate_mode)(BAD);break;}
+while (bits < 32) {do {
+if (have == 0) goto inf_leave;have--;hold += (int)(*next++ << bits);bits += 8;
+                                    }
+ while (0 != 0);}}
+ while (0 != 0);if (hold != (state->total & 0xffffffffUL)) {
+strm.msg = "incorrect length check";state->mode = (inflate_mode)BAD;break;}
 do {
-hold = (int)(0);bits = (uint)(0);}
- while ((0) != 0);}
-state->mode = (inflate_mode)(DONE);case DONE:ret = (int)(1);goto inf_leave;case BAD:ret = (int)(-3);goto inf_leave;case MEM:return (int)(-4);case SYNC:default: return (int)(-2);}}
+hold = 0;
+                                bits = 0;
+                            }
+ while (0 != 0);}
+state->mode = (inflate_mode)DONE;case DONE:ret = 1;
+                        goto inf_leave;case BAD:ret = -3;
+                        goto inf_leave;case MEM:return -4;
+                    case SYNC:default: return -2;
+                }}
 			inf_leave:;
 do {
-strm.next_out = put;strm.avail_out = (uint)(left);strm.next_in = next;strm.avail_in = (uint)(have);state->hold = (int)(hold);state->bits = (uint)(bits);}
- while ((0) != 0);
-			if (((state->wsize) != 0) || (((_out_ != strm.avail_out) && ((state->mode) < (BAD))) && (((state->mode) < (CHECK)) || (flush != 4)))) if ((updatewindow(strm, strm.next_out, (uint)(_out_ - strm.avail_out))) != 0) {
-state->mode = (inflate_mode)(MEM);return (int)(-4);}
+strm.next_out = put;strm.avail_out = left;
+                strm.next_in = next;strm.avail_in = have;
+                state->hold = hold;
+                state->bits = bits;
+            }
+ while (0 != 0);
+			if ((state->wsize != 0) || ((_out_ != strm.avail_out) && (state->mode < BAD) && ((state->mode < CHECK) || (flush != 4)))) if (updatewindow(strm, strm.next_out, _out_ - strm.avail_out) != 0) {
+state->mode = (inflate_mode)MEM;return -4;
+                }
 
-			_in_ -= (uint)(strm.avail_in);
-			_out_ -= (uint)(strm.avail_out);
-			strm.total_in += (int)(_in_);
-			strm.total_out += (int)(_out_);
-			state->total += (int)(_out_);
-			if (((state->wrap & 4)!= 0) && ((_out_) != 0)) strm.adler = (int)(state->check = (int)((state->flags) != 0?crc32((int)(state->check), strm.next_out - _out_, (uint)(_out_)):adler32((int)(state->check), strm.next_out - _out_, (uint)(_out_))));
-			strm.data_type = (int)((int)(state->bits) + ((state->last) != 0?64:0) + ((state->mode) == (TYPE)?128:0) + (((state->mode) == (LEN_)) || ((state->mode) == (COPY_))?256:0));
-			if (((((_in_) == (0)) && ((_out_) == (0))) || ((flush) == (4))) && ((ret) == (0))) ret = (int)(-5);
-			return (int)(ret);
+			_in_ -= strm.avail_in;
+			_out_ -= strm.avail_out;
+			strm.total_in += (int)_in_;
+			strm.total_out += (int)_out_;
+			state->total += (int)_out_;
+			if (((state->wrap & 4)!= 0) && (_out_ != 0)) strm.adler = state->check = (int)(state->flags != 0 ? crc32(state->check, strm.next_out - _out_, _out_) : adler32(state->check, strm.next_out - _out_, _out_));
+			strm.data_type = (int)((int)state->bits + (state->last != 0?64:0) + (state->mode == TYPE?128:0) + ((state->mode == LEN_) || (state->mode == COPY_)?256:0));
+			if ((((_in_ == 0) && (_out_ == 0)) || (flush == 4)) && (ret == 0)) ret = -5;
+			return ret;
 		}
 
 		public static int inflateEnd(z_stream_s strm)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if (state->window != null) strm.zfree(strm.opaque, (void *)(state->window));
-			strm.zfree(strm.opaque, (void *)(strm.state));
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			if (state->window != null) strm.zfree(strm.opaque, state->window);
+			strm.zfree(strm.opaque, (void *)strm.state);
 			strm.state = null;
-			return (int)(0);
+			return 0;
 		}
 
 		public static int inflateGetDictionary(z_stream_s strm, byte* dictionary, uint* dictLength)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if (((state->whave) != 0) && (dictionary != null)) {
-memcpy(dictionary, state->window + state->wnext, (ulong)(state->whave - state->wnext));memcpy(dictionary + state->whave - state->wnext, state->window, (ulong)(state->wnext));}
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			if ((state->whave != 0) && (dictionary != null)) {
+memcpy(dictionary, state->window + state->wnext, (ulong)(state->whave - state->wnext));memcpy(dictionary + state->whave - state->wnext, state->window, (ulong)state->wnext);}
 
-			if (dictLength != null) *dictLength = (uint)(state->whave);
-			return (int)(0);
+			if (dictLength != null) *dictLength = state->whave;
+			return 0;
 		}
 
 		public static int inflateSetDictionary(z_stream_s strm, byte* dictionary, uint dictLength)
@@ -1195,41 +1387,44 @@ memcpy(dictionary, state->window + state->wnext, (ulong)(state->whave - state->w
 			inflate_state state;
 			int dictid = 0;
 			int ret = 0;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if ((state->wrap != 0) && (state->mode != DICT)) return (int)(-2);
-			if ((state->mode) == (DICT)) {
-dictid = (int)(adler32((int)(0L), null, (uint)(0)));dictid = (int)(adler32((int)(dictid), dictionary, (uint)(dictLength)));if (dictid != state->check) return (int)(-3);}
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			if ((state->wrap != 0) && (state->mode != DICT)) return -2;
+			if (state->mode == DICT) {
+dictid = (int)adler32((int)0L, null, 0);dictid = (int)adler32(dictid, dictionary, dictLength);if (dictid != state->check) return -3;
+            }
 
-			ret = (int)(updatewindow(strm, dictionary + dictLength, (uint)(dictLength)));
-			if ((ret) != 0) {
-state->mode = (inflate_mode)(MEM);return (int)(-4);}
+			ret = updatewindow(strm, dictionary + dictLength, dictLength);
+			if (ret != 0) {
+state->mode = (inflate_mode)MEM;return -4;
+            }
 
-			state->havedict = (int)(1);
-			return (int)(0);
+			state->havedict = 1;
+			return 0;
 		}
 
 		public static int inflateGetHeader(z_stream_s strm, gz_header_s* head)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if ((state->wrap & 2) == (0)) return (int)(-2);
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			if ((state->wrap & 2) == 0) return -2;
 			state->head = head;
-			head->done = (int)(0);
-			return (int)(0);
+			head->done = 0;
+			return 0;
 		}
 
 		public static uint syncsearch(uint* have, byte* buf, uint len)
 		{
 			uint got = 0;
 			uint next = 0;
-			got = (uint)(*have);
-			next = (uint)(0);
-			while (((next) < (len)) && ((got) < (4))) {
-if (((int)(buf[next])) == ((got) < (2)?0:0xff)) got++; else if ((buf[next]) != 0) got = (uint)(0); else got = (uint)(4 - got);next++;}
-			*have = (uint)(got);
-			return (uint)(next);
+			got = *have;
+			next = 0;
+			while ((next < len) && (got < 4)) {
+if (buf[next] == (got < 2?0:0xff)) got++; else if (buf[next] != 0) got = 0; else got = 4 - got;
+                next++;}
+			*have = got;
+			return next;
 		}
 
 		public static int inflateSync(z_stream_s strm)
@@ -1238,33 +1433,36 @@ if (((int)(buf[next])) == ((got) < (2)?0:0xff)) got++; else if ((buf[next]) != 0
 			int _in_ = 0;int _out_ = 0;
 			byte* buf = stackalloc byte[4];
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if (((strm.avail_in) == (0)) && ((state->bits) < (8))) return (int)(-5);
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			if ((strm.avail_in == 0) && (state->bits < 8)) return -5;
 			if (state->mode != SYNC) {
-state->mode = (inflate_mode)(SYNC);state->hold <<= state->bits & 7;state->bits -= (uint)(state->bits & 7);len = (uint)(0);while ((state->bits) >= (8)) {
-buf[len++] = ((byte)(state->hold));state->hold >>= 8;state->bits -= (uint)(8);}state->have = (uint)(0);syncsearch(&(state->have), buf, (uint)(len));}
+state->mode = (inflate_mode)SYNC;state->hold <<= state->bits & 7;state->bits -= (uint)(state->bits & 7);len = 0;
+                while (state->bits >= 8) {
+buf[len++] = (byte)state->hold;state->hold >>= 8;state->bits -= 8;
+                }state->have = 0;
+                syncsearch(&state->have, buf, len);}
 
-			len = (uint)(syncsearch(&(state->have), strm.next_in, (uint)(strm.avail_in)));
-			strm.avail_in -= (uint)(len);
+			len = syncsearch(&state->have, strm.next_in, strm.avail_in);
+			strm.avail_in -= len;
 			strm.next_in += len;
-			strm.total_in += (int)(len);
-			if (state->have != 4) return (int)(-3);
-			_in_ = (int)(strm.total_in);
-			_out_ = (int)(strm.total_out);
+			strm.total_in += (int)len;
+			if (state->have != 4) return -3;
+			_in_ = strm.total_in;
+			_out_ = strm.total_out;
 			inflateReset(strm);
-			strm.total_in = (int)(_in_);
-			strm.total_out = (int)(_out_);
-			state->mode = (inflate_mode)(TYPE);
-			return (int)(0);
+			strm.total_in = _in_;
+			strm.total_out = _out_;
+			state->mode = (inflate_mode)TYPE;
+			return 0;
 		}
 
 		public static int inflateSyncPoint(z_stream_s strm)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			return (int)(((state->mode) == (STORED)) && ((state->bits) == (0))?1:0);
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			return (state->mode == STORED) && (state->bits == 0) ? 1 : 0;
 		}
 
 		public static int inflateCopy(z_stream_s dest, z_stream_s source)
@@ -1273,63 +1471,64 @@ buf[len++] = ((byte)(state->hold));state->hold >>= 8;state->bits -= (uint)(8);}s
 			inflate_state copy;
 			byte* window;
 			uint wsize = 0;
-			if (((inflateStateCheck(source)) != 0) || ((dest) == (null))) return (int)(-2);
-			state = (inflate_state)(source->state);
-			copy = (inflate_state)(*((source)->zalloc)((source)->opaque, (uint)(1), (uint)(sizeof(inflate_state))));
-			if ((copy) == (null)) return (int)(-4);
+			if ((inflateStateCheck(source) != 0) || (dest == null)) return -2;
+			state = (inflate_state)source->state;
+			copy = (inflate_state)(*source->zalloc(source->opaque, 1, (uint)sizeof(inflate_state)));
+			if (copy == null) return -4;
 			window = null;
 			if (state->window != null) {
-window = (byte*)(*((source)->zalloc)((source)->opaque, (uint)(1U << state->wbits), (uint)(sizeof(unsignedchar))));if ((window) == (null)) {
-*((source)->zfree)((source)->opaque, (void *)(copy));return (int)(-4);}
+window = (byte*)*source->zalloc(source->opaque, (uint)(1U << state->wbits), (uint)sizeof(unsignedchar));if (window == null) {
+*source->zfree(source->opaque, (void *)copy);return -4;
+                }
 }
 
-			memcpy((void *)(dest), (void *)(source), (ulong)(sizeof(z_stream_s)));
-			memcpy((void *)(copy), (void *)(state), (ulong)(sizeof(inflate_state)));
+			memcpy((void *)dest, (void *)source, (ulong)sizeof(z_stream_s));
+			memcpy((void *)copy, (void *)state, (ulong)sizeof(inflate_state));
 			copy->strm = dest;
-			if (((state->lencode) >= (state->codes)) && (state->lencode <= state->codes + (852 + 592) - 1)) {
+			if ((state->lencode >= state->codes) && (state->lencode <= state->codes + (852 + 592) - 1)) {
 copy->lencode = copy->codes + (state->lencode - state->codes);copy->distcode = copy->codes + (state->distcode - state->codes);}
 
 			copy->next = copy->codes + (state->next - state->codes);
 			if (window != null) {
-wsize = (uint)(1U << state->wbits);memcpy(window, state->window, (ulong)(wsize));}
+wsize = (uint)(1U << state->wbits);memcpy(window, state->window, (ulong)wsize);}
 
 			copy->window = window;
-			dest->state = (internal_state)(copy);
-			return (int)(0);
+			dest->state = (internal_state)copy;
+			return 0;
 		}
 
 		public static int inflateUndermine(z_stream_s strm, int subvert)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			(void)(subvert);
-			state->sane = (int)(1);
-			return (int)(-3);
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			(void)subvert;
+			state->sane = 1;
+			return -3;
 		}
 
 		public static int inflateValidate(z_stream_s strm, int check)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-2);
-			state = (inflate_state)(strm.state);
-			if ((check) != 0) state->wrap |= (int)(4); else state->wrap &= (int)(~4);
-			return (int)(0);
+			if (inflateStateCheck(strm) != 0) return -2;
+			state = (inflate_state)strm.state;
+			if (check != 0) state->wrap |= 4; else state->wrap &= ~4;
+			return 0;
 		}
 
 		public static int inflateMark(z_stream_s strm)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-(1L << 16));
-			state = (inflate_state)(strm.state);
-			return (int)(((state->back) << 16) + ((state->mode) == (COPY)?state->length:((state->mode) == (MATCH)?state->was - state->length:0)));
+			if (inflateStateCheck(strm) != 0) return (int)-(1L << 16);
+			state = (inflate_state)strm.state;
+			return (int)(((state->back) << 16) + (state->mode == COPY?state->length:(state->mode == MATCH?state->was - state->length:0)));
 		}
 
 		public static int inflateCodesUsed(z_stream_s strm)
 		{
 			inflate_state state;
-			if ((inflateStateCheck(strm)) != 0) return (int)(-1);
-			state = (inflate_state)(strm.state);
+			if (inflateStateCheck(strm) != 0) return -1;
+			state = (inflate_state)strm.state;
 			return (int)(state->next - state->codes);
 		}
 

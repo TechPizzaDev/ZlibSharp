@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sichem", "..\Sichem\Sichem\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZlibSharp", "..\ZlibSharp\ZlibSharp.csproj", "{8961EBE5-170F-4733-B66A-AA2EB188A120}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "..\Tests\Tests.csproj", "{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,14 @@ Global
 		{8961EBE5-170F-4733-B66A-AA2EB188A120}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8961EBE5-170F-4733-B66A-AA2EB188A120}.Release|x64.ActiveCfg = Release|Any CPU
 		{8961EBE5-170F-4733-B66A-AA2EB188A120}.Release|x64.Build.0 = Release|Any CPU
+		{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}.Debug|x64.Build.0 = Debug|Any CPU
+		{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}.Release|x64.ActiveCfg = Release|Any CPU
+		{9E43192B-92A9-4CE9-8DEF-DEC09FF2F157}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

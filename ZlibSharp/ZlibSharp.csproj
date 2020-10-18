@@ -2,18 +2,36 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="GZClose.cs" />
+    <Compile Remove="GZLib.cs" />
+    <Compile Remove="GZRead.cs" />
+    <Compile Remove="GZWrite.cs" />
+    <Compile Remove="InfBack.cs" />
+    <Compile Remove="InfFast.cs" />
+    <Compile Remove="InfLate.cs" />
+    <Compile Remove="InfTrees.cs" />
+    <Compile Remove="Uncompress.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\Sichem\Sichem\CRuntime.cs" Link="CRuntime.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="GZClose.cs" />
+    <None Include="GZLib.cs" />
+    <None Include="GZRead.cs" />
+    <None Include="GZWrite.cs" />
+    <None Include="InfBack.cs" />
+    <None Include="InfFast.cs" />
+    <None Include="InfLate.cs" />
+    <None Include="InfTrees.cs" />
+    <None Include="Uncompress.cs" />
   </ItemGroup>
 
 </Project>
